@@ -1245,10 +1245,32 @@
 
         // 通知時間の更新
         function updateNotificationTime() {
-            appState.notificationTime.evening = document.getElementById('evening-time').value;
-            appState.notificationTime.morning = document.getElementById('morning-time').value;
-            updateNotificationUI();
-            saveSettings();
+            console.log('=== updateNotificationTime START ===');
+            const eveningTime = document.getElementById('evening-time');
+            const morningTime = document.getElementById('morning-time');
+            
+            console.log('Time input elements found:', {
+                eveningTime: !!eveningTime,
+                morningTime: !!morningTime
+            });
+            
+            if (eveningTime && morningTime) {
+                const oldTimes = { ...appState.notificationTime };
+                appState.notificationTime.evening = eveningTime.value;
+                appState.notificationTime.morning = morningTime.value;
+                
+                console.log('Time changed:', {
+                    from: oldTimes,
+                    to: appState.notificationTime
+                });
+                
+                updateNotificationUI();
+                saveSettings();
+                console.log('Settings saved');
+            } else {
+                console.error('Time input elements not found');
+            }
+            console.log('=== updateNotificationTime END ===');
         }
 
         // 通知のスケジュール
@@ -1565,18 +1587,60 @@
 
         // 通知時間入力のイベントリスナー
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('=== DOM LOADED ===');
             init();
             
-            // 通知時間の変更イベント
-            document.getElementById('evening-time').addEventListener('change', updateNotificationTime);
-            document.getElementById('morning-time').addEventListener('change', updateNotificationTime);
+            // 通知時間の変更イベント - より確実な方法で設定
+            setTimeout(() => {
+                console.log('Setting up time input event listeners...');
+                
+                const eveningTime = document.getElementById('evening-time');
+                const morningTime = document.getElementById('morning-time');
+                
+                console.log('Time inputs on setup:', {
+                    eveningTime: !!eveningTime,
+                    morningTime: !!morningTime
+                });
+                
+                if (eveningTime) {
+                    eveningTime.addEventListener('change', function(e) {
+                        console.log('Evening time changed to:', e.target.value);
+                        updateNotificationTime();
+                    });
+                    console.log('Evening time listener added');
+                }
+                
+                if (morningTime) {
+                    morningTime.addEventListener('change', function(e) {
+                        console.log('Morning time changed to:', e.target.value);
+                        updateNotificationTime();
+                    });
+                    console.log('Morning time listener added');
+                }
+                
+                // トグルボタンのクリックイベントも確認
+                const toggleBtn = document.getElementById('notification-toggle');
+                if (toggleBtn) {
+                    console.log('Toggle button found, onclick attribute:', toggleBtn.getAttribute('onclick'));
+                    
+                    // 念のため、JavaScriptでもイベントリスナーを追加
+                    toggleBtn.addEventListener('click', function(e) {
+                        console.log('Toggle clicked via addEventListener');
+                        e.preventDefault();
+                        toggleNotifications();
+                    });
+                    console.log('Additional toggle listener added');
+                } else {
+                    console.error('Toggle button not found during setup');
+                }
+            }, 1000); // 1秒後に設定（PWAの初期化を待つ）
             
             // ドロップダウンの外側クリックで閉じる
             document.addEventListener('click', (e) => {
                 const dropdown = document.getElementById('area-select-dropdown');
                 const button = document.getElementById('area-select-btn');
                 
-                if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+                if (dropdown && button && !dropdown.contains(e.target) && !button.contains(e.target)) {
                     dropdown.classList.add('hidden');
                 }
             });
