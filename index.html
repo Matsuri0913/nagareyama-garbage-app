@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流山市ゴミ分別アプリ</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="流山ゴミ">
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { 
+            Calendar, Search, Trash2, Bell, MapPin, Clock, 
+            Settings, ChevronDown, ChevronLeft, ChevronRight 
+        } = lucide;
+
+        const NagareyamaGarbageApp = () => {
+            const [currentDate, setCurrentDate] = useState(new Date());
+            const [searchTerm, setSearchTerm] = useState('');
+            const [activeTab, setActiveTab] = useState('home');
+            const [selectedArea, setSelectedArea] = useState('');
+            const [notifications, setNotifications] = useState(false);
+            const [showAreaSelect, setShowAreaSelect] = useState(false);
+            const [notificationTime, setNotificationTime] = useState({ evening: '21:00', morning: '07:00' });
+            const [calendarDate, setCalendarDate] = useState(new Date());
+
+            // 流山市の地域とゴミ出し曜日の定義
+            const areaSchedules = {
+                '': { name: '地域を選択してください', schedule: {} },
+                'north': { 
+                    name: '北部（美田・野々下・三輪野山・桐ケ谷・長崎など)', 
+                    schedule: {
+                        '燃やすごみ': [2, 5], // 火・金
+                        '容器包装プラスチック': [1], // 月
+                        '燃やさないごみ': [4], // 木（第2・4週）
+                        'ペットボトル': [4], // 木（第1・3週）
+                        '有害危険ごみ': [4], // 木（第1・3週）
+                        '資源物': [6] // 土
+                    }
+                },
+                'central': { 
+                    name: '中央部（流山・平和台・加・西平井など)', 
+                    schedule: {
+                        '燃やすごみ': [1, 4], // 月・木
+                        '容器包装プラスチック': [2], // 火
+                        '燃やさないごみ': [5], // 金（第2・4週）
+                        'ペットボトル': [5], // 金（第1・3週）
+                        '有害危険ごみ': [5], // 金（第1・3週）
+                        '資源物': [0] // 日
+                    }
+                },
+                'south': { 
+                    name: '南部（南流山・鰭ヶ崎・前ケ崎など)', 
+                    schedule: {
+                        '燃やすごみ': [1, 4], // 月・木
+                        '容器包装プラスチック': [2], // 火
+                        '燃やさないごみ': [5], // 金（第2・4週）
+                        'ペットボトル': [5], // 金（第1・3週）
+                        '有害危険ごみ': [5], // 金（第1・3週）
+                        '資源物': [0] // 日
+                    }
+                },
+                'edogawadai': { 
+                    name: '江戸川台地区（江戸川台東・江戸川台西・東深井など)', 
+                    schedule: {
+                        '燃やすごみ': [2, 5], // 火・金
+                        '容器包装プラスチック': [4], // 木
+                        '燃やさないごみ': [3], // 水（第2・4週）
+                        'ペットボトル': [3], // 水（第1・3週）
+                        '有害危険ごみ': [3], // 水（第1・3週）
+                        '資源物': [6] // 土
+                    }
+                },
+                'hatsuishi': { 
+                    name: '初石地区（初石・西初石・東初石など)', 
+                    schedule: {
+                        '燃やすごみ': [2, 5], // 火・金
+                        '容器包装プラスチック': [1], // 月
+                        '燃やさないごみ': [3], // 水（第2・4週）
+                        'ペットボトル': [3], // 水（第1・3週）
+                        '有害危険ごみ': [3], // 水（第1・3週）
+                        '資源物': [6] // 土
+                    }
+                },
+                'ootakanomori': { 
+                    name: 'おおたかの森地区（おおたかの森各方角・市野谷・駒木など)', 
+                    schedule: {
+                        '燃やすごみ': [1, 4], // 月・木
+                        '容器包装プラスチック': [5], // 金
+                        '燃やさないごみ': [2], // 火（第2・4週）
+                        'ペットボトル': [2], // 火（第1・3週）
+                        '有害危険ごみ': [2], // 火（第1・3週）
+                        '資源物': [0] // 日
+                    }
+                }
+            };
+
+            // ゴミの種類と色の定義
+            const garbageTypes = {
+                '燃やすごみ': { color: 'bg-red-500', icon: '🔥' },
+                '容器包装プラスチック': { color: 'bg-green-500', icon: '♻️' },
+                '燃やさないごみ': { color: 'bg-gray-500', icon: '🗑️' },
+                'ペットボトル': { color: 'bg-blue-500', icon: '🍼' },
+                '有害危険ごみ': { color: 'bg-yellow-500', icon: '⚠️' },
+                '資源物': { color: 'bg-purple-500', icon: '📰' }
+            };
+
+            // PWA install prompt
+            const [deferredPrompt, setDeferredPrompt] = useState(null);
+            const [showInstallButton, setShowInstallButton] = useState(false);
+
+            // 初期化
+            useEffect(() => {
+                // 保存された設定を読み込み
+                const savedArea = localStorage.getItem('selectedArea');
+                const savedNotifications = localStorage.getItem('notifications') === 'true';
+                const savedNotificationTime = JSON.parse(localStorage.getItem('notificationTime') || '{"evening":"21:00","morning":"07:00"}');
+                
+                // 保存された地域が新しい地域リストに存在するかチェック
+                if (savedArea && areaSchedules[savedArea]) {
+                    setSelectedArea(savedArea);
+                } else {
+                    setSelectedArea('');
+                    localStorage.removeItem('selectedArea');
+                }
+                
+                if (savedNotifications) setNotifications(savedNotifications);
+                setNotificationTime(savedNotificationTime);
+                
+                // 通知権限をチェック
+                if ('Notification' in window && savedNotifications) {
+                    if (Notification.permission === 'default') {
+                        Notification.requestPermission();
+                    }
+                }
+
+                // PWA install prompt
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    setDeferredPrompt(e);
+                    setShowInstallButton(true);
+                });
+
+                // Service Worker registration
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then((registration) => {
+                            console.log('SW registered: ', registration);
+                        })
+                        .catch((registrationError) => {
+                            console.log('SW registration failed: ', registrationError);
+                        });
+                }
+            }, []);
+
+            // PWA install
+            const handleInstallClick = () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                            setShowInstallButton(false);
+                        }
+                        setDeferredPrompt(null);
+                    });
+                }
+            };
+
+            // 地域設定を保存
+            const saveAreaSetting = (area) => {
+                setSelectedArea(area);
+                localStorage.setItem('selectedArea', area);
+                setShowAreaSelect(false);
+            };
+
+            // 通知設定を保存
+            const toggleNotifications = async () => {
+                if (!notifications) {
+                    if ('Notification' in window) {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            setNotifications(true);
+                            localStorage.setItem('notifications', 'true');
+                            scheduleNotifications();
+                        } else {
+                            alert('通知の許可が必要です。ブラウザの設定で通知を許可してください。');
+                        }
+                    }
+                } else {
+                    setNotifications(false);
+                    localStorage.setItem('notifications', 'false');
+                }
+            };
+
+            // 通知時間を保存
+            const updateNotificationTime = (type, time) => {
+                const newTime = { ...notificationTime, [type]: time };
+                setNotificationTime(newTime);
+                localStorage.setItem('notificationTime', JSON.stringify(newTime));
+            };
+
+            // 通知をスケジュール
+            const scheduleNotifications = () => {
+                if (!selectedArea || !areaSchedules[selectedArea]) return;
+                console.log(`通知スケジュール: 前日${notificationTime.evening}, 当日${notificationTime.morning}`);
+            };
+
+            // カレンダーの日付変更
+            const changeCalendarMonth = (direction) => {
+                const newDate = new Date(calendarDate);
+                newDate.setMonth(newDate.getMonth() + direction);
+                setCalendarDate(newDate);
+            };
+
+            // カレンダー用のゴミ判定
+            const getGarbageForDate = (date) => {
+                if (!selectedArea || !areaSchedules[selectedArea]) return null;
+                
+                const dayOfWeek = date.getDay();
+                const schedule = areaSchedules[selectedArea].schedule;
+                
+                for (const [type, days] of Object.entries(schedule)) {
+                    if (days.includes(dayOfWeek)) {
+                        return type;
+                    }
+                }
+                return null;
+            };
+
+            // 今日のゴミを取得
+            const getTodayGarbage = () => {
+                if (!selectedArea || !areaSchedules[selectedArea]) return null;
+                
+                const today = currentDate.getDay();
+                const schedule = areaSchedules[selectedArea].schedule;
+                
+                for (const [type, days] of Object.entries(schedule)) {
+                    if (days.includes(today)) {
+                        return type;
+                    }
+                }
+                return null;
+            };
+
+            const todayGarbage = getTodayGarbage();
+
+            // 分別検索用のサンプルデータ
+            const garbageItems = [
+                { name: 'ペットボトル', type: 'ペットボトル', note: 'キャップとラベルは容器包装プラスチック' },
+                { name: '新聞紙', type: '資源物', note: '紐で十文字に束ねる' },
+                { name: '生ごみ', type: '燃やすごみ', note: '水分をよく切って' },
+                { name: 'プラスチック容器', type: '容器包装プラスチック', note: '汚れを落としてから' },
+                { name: '電池', type: '有害危険ごみ', note: 'テープで絶縁してから' },
+                { name: '空き缶', type: '燃やさないごみ', note: '中身を空にして' },
+                { name: 'アルミ缶', type: '燃やさないごみ', note: '中身を空にして' },
+                { name: '雑誌', type: '資源物', note: '紐で十文字に束ねる' },
+                { name: '段ボール', type: '資源物', note: '紐で十文字に束ねる' },
+                { name: '食品トレー', type: '容器包装プラスチック', note: '汚れを落としてから' }
+            ];
+
+            const filteredItems = garbageItems.filter(item =>
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            const formatDate = (date) => {
+                return new Intl.DateTimeFormat('ja-JP', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    weekday: 'long'
+                }).format(date);
+            };
+
+            const HomeTab = () => (
+                React.createElement('div', { className: 'space-y-6' },
+                    // PWA Install Banner
+                    showInstallButton && React.createElement('div', { className: 'bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg' },
+                        React.createElement('div', { className: 'flex items-center justify-between' },
+                            React.createElement('div', { className: 'flex items-center space-x-2' },
+                                React.createElement('📱', { className: 'text-lg' }),
+                                React.createElement('div', null,
+                                    React.createElement('p', { className: 'text-sm font-medium text-blue-700' }, 'アプリをインストール'),
+                                    React.createElement('p', { className: 'text-xs text-blue-600' }, 'ホーム画面に追加して素早くアクセス')
+                                )
+                            ),
+                            React.createElement('button', { 
+                                onClick: handleInstallClick,
+                                className: 'text-blue-600 hover:text-blue-800 text-sm font-medium bg-white px-3 py-1 rounded'
+                            }, 'インストール')
+                        )
+                    ),
+
+                    // 地域設定
+                    !selectedArea && React.createElement('div', { className: 'bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg' },
+                        React.createElement('div', { className: 'flex items-center justify-between' },
+                            React.createElement('div', { className: 'flex items-center space-x-2' },
+                                React.createElement(MapPin, { className: 'w-5 h-5 text-yellow-600' }),
+                                React.createElement('p', { className: 'text-sm text-yellow-700' },
+                                    React.createElement('strong', null, '地域を設定してください')
+                                )
+                            ),
+                            React.createElement('button', { 
+                                onClick: () => setActiveTab('settings'),
+                                className: 'text-yellow-600 hover:text-yellow-800 text-sm font-medium'
+                            }, '設定する')
+                        )
+                    ),
+
+                    // 今日の日付
+                    React.createElement('div', { className: 'text-center' },
+                        React.createElement('h2', { className: 'text-lg font-medium text-gray-600' }, formatDate(currentDate)),
+                        selectedArea && areaSchedules[selectedArea] && React.createElement('p', { className: 'text-sm text-blue-600 mt-1' }, areaSchedules[selectedArea].name)
+                    ),
+
+                    // 今日のゴミ
+                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
+                        React.createElement('div', { className: 'flex items-center space-x-3 mb-4' },
+                            React.createElement(Clock, { className: 'w-6 h-6 text-blue-600' }),
+                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800' }, '今日のゴミ'),
+                            notifications && React.createElement(Bell, { className: 'w-5 h-5 text-green-500', title: '通知ON' })
+                        ),
+                        
+                        todayGarbage ? React.createElement('div', { className: 'flex items-center space-x-4' },
+                            React.createElement('div', { className: `w-12 h-12 ${garbageTypes[todayGarbage].color} rounded-full flex items-center justify-center text-white text-xl` },
+                                garbageTypes[todayGarbage].icon
+                            ),
+                            React.createElement('div', null,
+                                React.createElement('p', { className: 'text-lg font-semibold text-gray-800' }, todayGarbage),
+                                React.createElement('p', { className: 'text-sm text-gray-600' }, '午前8時30分までに出してください')
+                            )
+                        ) : selectedArea ? React.createElement('div', { className: 'text-center py-8' },
+                            React.createElement('p', { className: 'text-gray-500 text-lg' }, '今日はゴミ出しの日ではありません'),
+                            React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '次回のゴミ出し日をカレンダーで確認しましょう')
+                        ) : React.createElement('div', { className: 'text-center py-8' },
+                            React.createElement('p', { className: 'text-gray-500 text-lg' }, '地域を設定してください'),
+                            React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '設定するとゴミ出し日がわかります')
+                        )
+                    ),
+
+                    // お知らせエリア
+                    React.createElement('div', { className: 'bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg' },
+                        React.createElement('div', { className: 'flex items-center space-x-2' },
+                            React.createElement(Bell, { className: 'w-5 h-5 text-blue-600' }),
+                            React.createElement('p', { className: 'text-sm text-blue-700' },
+                                React.createElement('strong', null, 'お知らせ：'),
+                                '雨の日は資源物（紙類・布類）の回収が中止される場合があります'
+                            )
+                        )
+                    ),
+
+                    // クイックアクション
+                    React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
+                        React.createElement('button', { 
+                            onClick: () => setActiveTab('search'),
+                            className: 'bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors'
+                        },
+                            React.createElement(Search, { className: 'w-8 h-8' }),
+                            React.createElement('span', { className: 'font-medium' }, '分別を調べる')
+                        ),
+                        React.createElement('button', { 
+                            onClick: () => setActiveTab('calendar'),
+                            className: 'bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors'
+                        },
+                            React.createElement(Calendar, { className: 'w-8 h-8' }),
+                            React.createElement('span', { className: 'font-medium' }, 'カレンダー')
+                        )
+                    )
+                )
+            );
+
+            const SearchTab = () => (
+                React.createElement('div', { className: 'space-y-6' },
+                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
+                        React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
+                            React.createElement(Search, { className: 'w-6 h-6 mr-2 text-blue-600' }),
+                            'ゴミの分別を調べる'
+                        ),
+
+                        React.createElement('div', { className: 'relative mb-6' },
+                            React.createElement('input', {
+                                type: 'text',
+                                placeholder: '捨てたいものを入力してください（例：ペットボトル）',
+                                value: searchTerm,
+                                onChange: (e) => setSearchTerm(e.target.value),
+                                className: 'w-full p-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
+                            }),
+                            React.createElement(Search, { className: 'absolute right-3 top-4 w-6 h-6 text-gray-400' })
+                        ),
+
+                        React.createElement('div', { className: 'space-y-3' },
+                            filteredItems.length > 0 ? filteredItems.map((item, index) => (
+                                React.createElement('div', { key: index, className: 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors' },
+                                    React.createElement('div', { 
+                                        className: `text-sm ${
+                                            isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
+                                        } ${isToday ? 'font-bold' : ''}`
+                                    }, date.getDate()),
+                                    garbageType && isCurrentMonth && React.createElement('div', { 
+                                        className: `mt-1 p-1 ${garbageTypes[garbageType].color} rounded text-white text-xs text-center`
+                                    }, garbageTypes[garbageType].icon)
+                                );
+                            })
+                        ),
+
+                        // 凡例
+                        React.createElement('div', { className: 'mt-4 grid grid-cols-2 gap-2' },
+                            Object.entries(garbageTypes).map(([type, info]) => (
+                                React.createElement('div', { key: type, className: 'flex items-center space-x-2 text-xs' },
+                                    React.createElement('div', { className: `w-4 h-4 ${info.color} rounded flex items-center justify-center text-white text-xs` },
+                                        info.icon
+                                    ),
+                                    React.createElement('span', { className: 'text-gray-600' }, type)
+                                )
+                            ))
+                        ),
+
+                        // 収集日一覧（折りたたみ可能）
+                        React.createElement('div', { className: 'mt-6 border-t pt-4' },
+                            React.createElement('details', { className: 'group' },
+                                React.createElement('summary', { className: 'cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900' },
+                                    '📋 収集日一覧を表示'
+                                ),
+                                React.createElement('div', { className: 'mt-3 space-y-2' },
+                                    Object.entries(garbageTypes).map(([type, info]) => {
+                                        const schedule = areaSchedules[selectedArea].schedule[type];
+                                        const scheduleText = schedule ? schedule.map(day => weekDayNames[day]).join('・') : '未設定';
+                                        
+                                        return React.createElement('div', { key: type, className: 'flex items-center space-x-3 p-2 bg-gray-50 rounded' },
+                                            React.createElement('div', { className: `w-6 h-6 ${info.color} rounded flex items-center justify-center text-white text-xs` },
+                                                info.icon
+                                            ),
+                                            React.createElement('div', { className: 'flex-1 text-sm' },
+                                                React.createElement('span', { className: 'font-medium' }, type),
+                                                React.createElement('span', { className: 'text-gray-600 ml-2' }, scheduleText)
+                                            )
+                                        );
+                                    })
+                                )
+                            )
+                        ),
+
+                        React.createElement('div', { className: 'mt-6 p-4 bg-blue-50 rounded-lg' },
+                            React.createElement('h4', { className: 'font-semibold text-blue-800 mb-2' }, '注意事項'),
+                            React.createElement('ul', { className: 'text-sm text-blue-700 space-y-1' },
+                                React.createElement('li', null, '• 午前8時30分までに指定の集積所に出してください'),
+                                React.createElement('li', null, '• 雨の日は資源物（紙類・布類）は出さないでください'),
+                                React.createElement('li', null, '• 指定のゴミ袋を使用してください')
+                            )
+                        )
+                    )
+                );
+            };
+
+            const SettingsTab = () => (
+                React.createElement('div', { className: 'space-y-6' },
+                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
+                        React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
+                            React.createElement(Settings, { className: 'w-6 h-6 mr-2 text-gray-600' }),
+                            'アプリ設定'
+                        ),
+                        
+                        // 地域設定
+                        React.createElement('div', { className: 'space-y-4' },
+                            React.createElement('div', null,
+                                React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' },
+                                    'お住まいの地域'
+                                ),
+                                React.createElement('div', { className: 'relative' },
+                                    React.createElement('button', {
+                                        onClick: () => setShowAreaSelect(!showAreaSelect),
+                                        className: 'w-full p-3 border border-gray-300 rounded-lg text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                    },
+                                        React.createElement('span', { className: selectedArea && areaSchedules[selectedArea] ? 'text-gray-900' : 'text-gray-500' },
+                                            selectedArea && areaSchedules[selectedArea] ? areaSchedules[selectedArea].name : '地域を選択してください'
+                                        ),
+                                        React.createElement(ChevronDown, { className: 'w-5 h-5 text-gray-400' })
+                                    ),
+                                    
+                                    showAreaSelect && React.createElement('div', { className: 'absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg' },
+                                        Object.entries(areaSchedules).slice(1).map(([key, area]) => (
+                                            React.createElement('button', {
+                                                key: key,
+                                                onClick: () => saveAreaSetting(key),
+                                                className: 'w-full p-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg border-b border-gray-200 last:border-b-0'
+                                            }, area.name)
+                                        ))
+                                    )
+                                )
+                            ),
+
+                            // 通知設定
+                            React.createElement('div', { className: 'border-t pt-4' },
+                                React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                                    React.createElement('div', null,
+                                        React.createElement('h4', { className: 'font-medium text-gray-900' }, 'プッシュ通知'),
+                                        React.createElement('p', { className: 'text-sm text-gray-600' }, 'ゴミ出し日の前日と当日に通知します')
+                                    ),
+                                    React.createElement('button', {
+                                        onClick: toggleNotifications,
+                                        className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                                            notifications ? 'bg-blue-600' : 'bg-gray-200'
+                                        }`
+                                    },
+                                        React.createElement('span', {
+                                            className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                                                notifications ? 'translate-x-6' : 'translate-x-1'
+                                            }`
+                                        })
+                                    )
+                                ),
+
+                                // 通知時間設定
+                                notifications && React.createElement('div', { className: 'space-y-3' },
+                                    React.createElement('div', { className: 'flex items-center justify-between' },
+                                        React.createElement('span', { className: 'text-sm text-gray-700' }, '前日通知時間'),
+                                        React.createElement('input', {
+                                            type: 'time',
+                                            value: notificationTime.evening,
+                                            onChange: (e) => updateNotificationTime('evening', e.target.value),
+                                            className: 'px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                        })
+                                    ),
+                                    React.createElement('div', { className: 'flex items-center justify-between' },
+                                        React.createElement('span', { className: 'text-sm text-gray-700' }, '当日通知時間'),
+                                        React.createElement('input', {
+                                            type: 'time',
+                                            value: notificationTime.morning,
+                                            onChange: (e) => updateNotificationTime('morning', e.target.value),
+                                            className: 'px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+                                        })
+                                    )
+                                )
+                            ),
+
+                            // 通知の説明
+                            notifications && React.createElement('div', { className: 'bg-green-50 p-3 rounded-lg mt-4' },
+                                React.createElement('p', { className: 'text-sm text-green-700' },
+                                    `✅ 通知が有効です。前日${notificationTime.evening}と当日${notificationTime.morning}に通知されます。`
+                                )
+                            )
+                        ),
+
+                        // アプリ情報
+                        React.createElement('div', { className: 'mt-6 pt-4 border-t' },
+                            React.createElement('h4', { className: 'font-medium text-gray-900 mb-2' }, 'アプリについて'),
+                            React.createElement('div', { className: 'text-sm text-gray-600 space-y-1' },
+                                React.createElement('p', null, 'バージョン: 1.0.0'),
+                                React.createElement('p', null, '対象地域: 流山市'),
+                                React.createElement('p', null, 'データ更新: 2025年6月'),
+                                React.createElement('p', null, 'PWA対応 - オフライン利用可能')
+                            )
+                        )
+                    )
+                )
+            );
+
+            return React.createElement('div', { className: 'max-w-md mx-auto bg-gray-50 min-h-screen' },
+                // ヘッダー
+                React.createElement('div', { className: 'bg-blue-600 text-white p-4 sticky top-0 z-10' },
+                    React.createElement('div', { className: 'flex items-center space-x-2' },
+                        React.createElement(MapPin, { className: 'w-6 h-6' }),
+                        React.createElement('div', null,
+                            React.createElement('h1', { className: 'text-lg font-bold' }, '流山市ゴミ分別アプリ'),
+                            React.createElement('p', { className: 'text-sm text-blue-100' }, '正しい分別で環境を守ろう')
+                        )
+                    )
+                ),
+
+                // メインコンテンツ
+                React.createElement('div', { className: 'p-4 pb-20' },
+                    activeTab === 'home' && React.createElement(HomeTab),
+                    activeTab === 'search' && React.createElement(SearchTab),
+                    activeTab === 'calendar' && React.createElement(CalendarTab),
+                    activeTab === 'settings' && React.createElement(SettingsTab)
+                ),
+
+                // ボトムナビゲーション
+                React.createElement('div', { className: 'fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200' },
+                    React.createElement('div', { className: 'flex' },
+                        [
+                            { id: 'home', icon: Trash2, label: 'ホーム' },
+                            { id: 'search', icon: Search, label: '検索' },
+                            { id: 'calendar', icon: Calendar, label: 'カレンダー' },
+                            { id: 'settings', icon: Settings, label: '設定' }
+                        ].map(({ id, icon: Icon, label }) => (
+                            React.createElement('button', {
+                                key: id,
+                                onClick: () => setActiveTab(id),
+                                className: `flex-1 py-3 px-2 text-center transition-colors ${
+                                    activeTab === id 
+                                        ? 'text-blue-600 bg-blue-50' 
+                                        : 'text-gray-600 hover:text-blue-600'
+                                }`
+                            },
+                                React.createElement(Icon, { className: 'w-6 h-6 mx-auto mb-1' }),
+                                React.createElement('span', { className: 'text-xs font-medium' }, label)
+                            )
+                        ))
+                    )
+                )
+            );
+        };
+
+        ReactDOM.render(React.createElement(NagareyamaGarbageApp), document.getElementById('root'));
+    </script>
+</body>
+</html> { className: 'flex items-center space-x-4' },
+                                        React.createElement('div', { className: `w-10 h-10 ${garbageTypes[item.type].color} rounded-full flex items-center justify-center text-white` },
+                                            garbageTypes[item.type].icon
+                                        ),
+                                        React.createElement('div', { className: 'flex-1' },
+                                            React.createElement('h4', { className: 'font-semibold text-gray-800' }, item.name),
+                                            React.createElement('p', { className: 'text-blue-600 font-medium' }, item.type),
+                                            item.note && React.createElement('p', { className: 'text-sm text-gray-600 mt-1' }, item.note)
+                                        )
+                                    )
+                                )
+                            )) : searchTerm ? React.createElement('div', { className: 'text-center py-8' },
+                                React.createElement('p', { className: 'text-gray-500' }, `「${searchTerm}」の検索結果が見つかりませんでした`),
+                                React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '別のキーワードで検索してみてください')
+                            ) : React.createElement('div', { className: 'text-center py-8' },
+                                React.createElement('p', { className: 'text-gray-500' }, '調べたいゴミの名前を入力してください'),
+                                React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, 'ペットボトル、新聞紙、電池など')
+                            )
+                        )
+                    )
+                )
+            );
+
+            const CalendarTab = () => {
+                if (!selectedArea) {
+                    return React.createElement('div', { className: 'space-y-6' },
+                        React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
+                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
+                                React.createElement(Calendar, { className: 'w-6 h-6 mr-2 text-green-600' }),
+                                'ゴミ出しカレンダー'
+                            ),
+                            React.createElement('div', { className: 'text-center py-8' },
+                                React.createElement('p', { className: 'text-gray-500' }, '地域を設定してください'),
+                                React.createElement('button', { 
+                                    onClick: () => setActiveTab('settings'),
+                                    className: 'mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
+                                }, '地域を設定する')
+                            )
+                        )
+                    );
+                }
+
+                const year = calendarDate.getFullYear();
+                const month = calendarDate.getMonth();
+                const today = new Date();
+                
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const daysInMonth = lastDay.getDate();
+                const startingDayOfWeek = firstDay.getDay();
+                
+                const monthNames = [
+                    '1月', '2月', '3月', '4月', '5月', '6月',
+                    '7月', '8月', '9月', '10月', '11月', '12月'
+                ];
+                
+                const weekDayNames = ['日', '月', '火', '水', '木', '金', '土'];
+                
+                const calendarDays = [];
+                
+                // 前月の日付を埋める
+                for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                    const prevDate = new Date(year, month, -i);
+                    calendarDays.push({ date: prevDate, isCurrentMonth: false });
+                }
+                
+                // 当月の日付
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const currentDate = new Date(year, month, day);
+                    calendarDays.push({ date: currentDate, isCurrentMonth: true });
+                }
+                
+                // 次月の日付を埋める（42セルまで）
+                const remainingCells = 42 - calendarDays.length;
+                for (let day = 1; day <= remainingCells; day++) {
+                    const nextDate = new Date(year, month + 1, day);
+                    calendarDays.push({ date: nextDate, isCurrentMonth: false });
+                }
+
+                return React.createElement('div', { className: 'space-y-6' },
+                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
+                        // ヘッダー
+                        React.createElement('div', { className: 'flex items-center justify-between mb-4' },
+                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800 flex items-center' },
+                                React.createElement(Calendar, { className: 'w-6 h-6 mr-2 text-green-600' }),
+                                'ゴミ出しカレンダー'
+                            ),
+                            React.createElement('div', { className: 'flex items-center space-x-3' },
+                                React.createElement('button', { 
+                                    onClick: () => changeCalendarMonth(-1),
+                                    className: 'p-2 hover:bg-gray-100 rounded-lg'
+                                },
+                                    React.createElement(ChevronLeft, { className: 'w-5 h-5 text-gray-600' })
+                                ),
+                                React.createElement('span', { className: 'font-semibold text-lg text-gray-800 min-w-[120px] text-center' },
+                                    `${year}年${monthNames[month]}`
+                                ),
+                                React.createElement('button', { 
+                                    onClick: () => changeCalendarMonth(1),
+                                    className: 'p-2 hover:bg-gray-100 rounded-lg'
+                                },
+                                    React.createElement(ChevronRight, { className: 'w-5 h-5 text-gray-600' })
+                                )
+                            )
+                        ),
+
+                        // カレンダーヘッダー
+                        React.createElement('div', { className: 'grid grid-cols-7 gap-1 mb-2' },
+                            weekDayNames.map(day => (
+                                React.createElement('div', { key: day, className: 'text-center text-sm font-medium text-gray-600 py-2' }, day)
+                            ))
+                        ),
+
+                        // カレンダー日付
+                        React.createElement('div', { className: 'grid grid-cols-7 gap-1' },
+                            calendarDays.map((dayInfo, index) => {
+                                const { date, isCurrentMonth } = dayInfo;
+                                const isToday = date.toDateString() === today.toDateString();
+                                const garbageType = getGarbageForDate(date);
+                                
+                                return React.createElement('div', {
+                                    key: index,
+                                    className: `min-h-[60px] p-1 border border-gray-100 rounded-lg ${
+                                        isCurrentMonth ? 'bg-white' : 'bg-gray-50'
+                                    } ${isToday ? 'ring-2 ring-blue-500' : ''}`
+                                },
+                                    React.createElement('div',
