@@ -4,796 +4,1334 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>流山市ゴミ分別アプリ</title>
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/umd/lucide-react.js"></script>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#2563eb">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="流山ゴミ">
+    <style>
+        /* Tailwind-like CSS */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f9fafb;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 28rem;
+            margin: 0 auto;
+            background-color: #f9fafb;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background-color: #2563eb;
+            color: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header h1 {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
+        
+        .header p {
+            font-size: 0.875rem;
+            color: #bfdbfe;
+        }
+        
+        .content {
+            padding: 1rem;
+            padding-bottom: 6rem;
+        }
+        
+        .space-y-6 > * + * {
+            margin-top: 1.5rem;
+        }
+        
+        .space-y-4 > * + * {
+            margin-top: 1rem;
+        }
+        
+        .space-y-3 > * + * {
+            margin-top: 0.75rem;
+        }
+        
+        .space-y-2 > * + * {
+            margin-top: 0.5rem;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        
+        .btn-secondary {
+            background-color: #6b7280;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #4b5563;
+        }
+        
+        .input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1.125rem;
+            outline: none;
+        }
+        
+        .input:focus {
+            ring: 2px solid #3b82f6;
+            border-color: #3b82f6;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .alert-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            color: #1e40af;
+        }
+        
+        .alert-warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            color: #92400e;
+        }
+        
+        .alert-success {
+            background-color: #f0fdf4;
+            border-left: 4px solid #10b981;
+            color: #065f46;
+        }
+        
+        .garbage-badge {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.25rem;
+        }
+        
+        .garbage-badge-sm {
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.75rem;
+        }
+        
+        .bg-red-500 { background-color: #ef4444; }
+        .bg-green-500 { background-color: #10b981; }
+        .bg-gray-500 { background-color: #6b7280; }
+        .bg-blue-500 { background-color: #3b82f6; }
+        .bg-yellow-500 { background-color: #eab308; }
+        .bg-purple-500 { background-color: #a855f7; }
+        
+        .text-gray-900 { color: #111827; }
+        .text-gray-700 { color: #374151; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-400 { color: #9ca3af; }
+        .text-blue-600 { color: #2563eb; }
+        .text-blue-700 { color: #1d4ed8; }
+        .text-blue-800 { color: #1e40af; }
+        .text-yellow-600 { color: #d97706; }
+        .text-yellow-700 { color: #b45309; }
+        .text-yellow-800 { color: #92400e; }
+        .text-green-600 { color: #059669; }
+        .text-green-700 { color: #047857; }
+        
+        .text-center { text-align: center; }
+        .text-left { text-align: left; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        
+        .font-bold { font-weight: bold; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        
+        .grid-cols-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 1rem;
+        }
+        
+        .grid-cols-7 {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 0.25rem;
+        }
+        
+        .flex {
+            display: flex;
+        }
+        
+        .flex-col {
+            flex-direction: column;
+        }
+        
+        .items-center {
+            align-items: center;
+        }
+        
+        .justify-center {
+            justify-content: center;
+        }
+        
+        .justify-between {
+            justify-content: space-between;
+        }
+        
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+        
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mt-6 { margin-top: 1.5rem; }
+        
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        
+        .ml-2 { margin-left: 0.5rem; }
+        .mr-2 { margin-right: 0.5rem; }
+        
+        .border { border: 1px solid #d1d5db; }
+        .border-t { border-top: 1px solid #d1d5db; }
+        .border-b { border-bottom: 1px solid #d1d5db; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        
+        .bg-gray-50 { background-color: #f9fafb; }
+        .bg-blue-50 { background-color: #eff6ff; }
+        .bg-yellow-50 { background-color: #fffbeb; }
+        .bg-green-50 { background-color: #f0fdf4; }
+        .bg-white { background-color: white; }
+        
+        .hover\:bg-gray-100:hover { background-color: #f3f4f6; }
+        .hover\:bg-gray-50:hover { background-color: #f9fafb; }
+        .hover\:bg-blue-600:hover { background-color: #2563eb; }
+        .hover\:bg-green-600:hover { background-color: #059669; }
+        
+        .underline { text-decoration: underline; }
+        .cursor-pointer { cursor: pointer; }
+        
+        .hidden { display: none; }
+        .block { display: block; }
+        
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .fixed { position: fixed; }
+        .sticky { position: sticky; }
+        
+        .top-0 { top: 0; }
+        .bottom-0 { bottom: 0; }
+        .left-1\/2 { left: 50%; }
+        .transform { transform: translateX(-50%); }
+        
+        .z-10 { z-index: 10; }
+        
+        .w-full { width: 100%; }
+        .min-h-screen { min-height: 100vh; }
+        .max-w-md { max-width: 28rem; }
+        
+        .shadow-md {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        .shadow-lg {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .transition-colors {
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 28rem;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+        }
+        
+        .nav-item {
+            flex: 1;
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            color: #6b7280;
+        }
+        
+        .nav-item:hover {
+            color: #2563eb;
+        }
+        
+        .nav-item.active {
+            color: #2563eb;
+            background-color: #eff6ff;
+        }
+        
+        .nav-icon {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        
+        .nav-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        /* Calendar specific styles */
+        .calendar-day {
+            min-height: 60px;
+            padding: 0.25rem;
+            border: 1px solid #f3f4f6;
+            border-radius: 0.5rem;
+            background: white;
+        }
+        
+        .calendar-day.other-month {
+            background-color: #f9fafb;
+        }
+        
+        .calendar-day.today {
+            ring: 2px solid #3b82f6;
+        }
+        
+        /* Toggle switch */
+        .toggle {
+            position: relative;
+            display: inline-flex;
+            height: 1.5rem;
+            width: 2.75rem;
+            align-items: center;
+            border-radius: 9999px;
+            transition: background-color 0.2s;
+            background-color: #d1d5db;
+            cursor: pointer;
+        }
+        
+        .toggle.active {
+            background-color: #2563eb;
+        }
+        
+        .toggle-switch {
+            display: inline-block;
+            height: 1rem;
+            width: 1rem;
+            transform: translateX(0.25rem);
+            border-radius: 50%;
+            background-color: white;
+            transition: transform 0.2s;
+        }
+        
+        .toggle.active .toggle-switch {
+            transform: translateX(1.5rem);
+        }
+        
+        /* Icons (using Unicode characters) */
+        .icon { font-style: normal; }
+    </style>
 </head>
 <body>
-    <div id="root"></div>
-    
-    <script type="text/babel">
-        const { useState, useEffect } = React;
-        const { 
-            Calendar, Search, Trash2, Bell, MapPin, Clock, 
-            Settings, ChevronDown, ChevronLeft, ChevronRight 
-        } = lucide;
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-content">
+                <span class="icon">📍</span>
+                <div>
+                    <h1>流山市ゴミ分別アプリ</h1>
+                    <p>正しい分別で環境を守ろう</p>
+                </div>
+            </div>
+        </div>
 
-        const NagareyamaGarbageApp = () => {
-            const [currentDate, setCurrentDate] = useState(new Date());
-            const [searchTerm, setSearchTerm] = useState('');
-            const [activeTab, setActiveTab] = useState('home');
-            const [selectedArea, setSelectedArea] = useState('');
-            const [notifications, setNotifications] = useState(false);
-            const [showAreaSelect, setShowAreaSelect] = useState(false);
-            const [notificationTime, setNotificationTime] = useState({ evening: '21:00', morning: '07:00' });
-            const [calendarDate, setCalendarDate] = useState(new Date());
+        <!-- Main Content -->
+        <div class="content">
+            <!-- Home Tab -->
+            <div id="home-tab" class="tab-content">
+                <div class="space-y-6">
+                    <!-- PWA Install Banner -->
+                    <div id="install-banner" class="alert alert-info hidden">
+                        <div class="flex items-center gap-2">
+                            <span class="icon">📱</span>
+                            <div>
+                                <p class="text-sm font-medium text-blue-700">アプリをインストール</p>
+                                <p class="text-xs text-blue-600">ホーム画面に追加して素早くアクセス</p>
+                            </div>
+                        </div>
+                        <button id="install-btn" class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-white px-3 py-1 rounded">インストール</button>
+                    </div>
 
-            // 流山市の地域とゴミ出し曜日の定義
-            const areaSchedules = {
-                '': { name: '地域を選択してください', schedule: {} },
-                'north': { 
-                    name: '北部（美田・野々下・三輪野山・桐ケ谷・長崎など)', 
-                    schedule: {
-                        '燃やすごみ': [2, 5], // 火・金
-                        '容器包装プラスチック': [1], // 月
-                        '燃やさないごみ': [4], // 木（第2・4週）
-                        'ペットボトル': [4], // 木（第1・3週）
-                        '有害危険ごみ': [4], // 木（第1・3週）
-                        '資源物': [6] // 土
-                    }
-                },
-                'central': { 
-                    name: '中央部（流山・平和台・加・西平井など)', 
-                    schedule: {
-                        '燃やすごみ': [1, 4], // 月・木
-                        '容器包装プラスチック': [2], // 火
-                        '燃やさないごみ': [5], // 金（第2・4週）
-                        'ペットボトル': [5], // 金（第1・3週）
-                        '有害危険ごみ': [5], // 金（第1・3週）
-                        '資源物': [0] // 日
-                    }
-                },
-                'south': { 
-                    name: '南部（南流山・鰭ヶ崎・前ケ崎など)', 
-                    schedule: {
-                        '燃やすごみ': [1, 4], // 月・木
-                        '容器包装プラスチック': [2], // 火
-                        '燃やさないごみ': [5], // 金（第2・4週）
-                        'ペットボトル': [5], // 金（第1・3週）
-                        '有害危険ごみ': [5], // 金（第1・3週）
-                        '資源物': [0] // 日
-                    }
-                },
-                'edogawadai': { 
-                    name: '江戸川台地区（江戸川台東・江戸川台西・東深井など)', 
-                    schedule: {
-                        '燃やすごみ': [2, 5], // 火・金
-                        '容器包装プラスチック': [4], // 木
-                        '燃やさないごみ': [3], // 水（第2・4週）
-                        'ペットボトル': [3], // 水（第1・3週）
-                        '有害危険ごみ': [3], // 水（第1・3週）
-                        '資源物': [6] // 土
-                    }
-                },
-                'hatsuishi': { 
-                    name: '初石地区（初石・西初石・東初石など)', 
-                    schedule: {
-                        '燃やすごみ': [2, 5], // 火・金
-                        '容器包装プラスチック': [1], // 月
-                        '燃やさないごみ': [3], // 水（第2・4週）
-                        'ペットボトル': [3], // 水（第1・3週）
-                        '有害危険ごみ': [3], // 水（第1・3週）
-                        '資源物': [6] // 土
-                    }
-                },
-                'ootakanomori': { 
-                    name: 'おおたかの森地区（おおたかの森各方角・市野谷・駒木など)', 
-                    schedule: {
-                        '燃やすごみ': [1, 4], // 月・木
-                        '容器包装プラスチック': [5], // 金
-                        '燃やさないごみ': [2], // 火（第2・4週）
-                        'ペットボトル': [2], // 火（第1・3週）
-                        '有害危険ごみ': [2], // 火（第1・3週）
-                        '資源物': [0] // 日
-                    }
-                }
-            };
+                    <!-- Area Setting Warning -->
+                    <div id="area-warning" class="alert alert-warning">
+                        <div class="flex items-center gap-2">
+                            <span class="icon">📍</span>
+                            <p class="text-sm text-yellow-700"><strong>地域を設定してください</strong></p>
+                        </div>
+                        <button onclick="showTab('settings')" class="text-yellow-600 hover:text-yellow-800 text-sm font-medium">設定する</button>
+                    </div>
 
-            // ゴミの種類と色の定義
-            const garbageTypes = {
-                '燃やすごみ': { color: 'bg-red-500', icon: '🔥' },
-                '容器包装プラスチック': { color: 'bg-green-500', icon: '♻️' },
-                '燃やさないごみ': { color: 'bg-gray-500', icon: '🗑️' },
-                'ペットボトル': { color: 'bg-blue-500', icon: '🍼' },
-                '有害危険ごみ': { color: 'bg-yellow-500', icon: '⚠️' },
-                '資源物': { color: 'bg-purple-500', icon: '📰' }
-            };
+                    <!-- Today's Date -->
+                    <div class="text-center">
+                        <h2 id="current-date" class="text-lg font-medium text-gray-600"></h2>
+                        <p id="selected-area-name" class="text-sm text-blue-600 mt-1"></p>
+                    </div>
 
-            // PWA install prompt
-            const [deferredPrompt, setDeferredPrompt] = useState(null);
-            const [showInstallButton, setShowInstallButton] = useState(false);
-
-            // 初期化
-            useEffect(() => {
-                // 保存された設定を読み込み
-                const savedArea = localStorage.getItem('selectedArea');
-                const savedNotifications = localStorage.getItem('notifications') === 'true';
-                const savedNotificationTime = JSON.parse(localStorage.getItem('notificationTime') || '{"evening":"21:00","morning":"07:00"}');
-                
-                // 保存された地域が新しい地域リストに存在するかチェック
-                if (savedArea && areaSchedules[savedArea]) {
-                    setSelectedArea(savedArea);
-                } else {
-                    setSelectedArea('');
-                    localStorage.removeItem('selectedArea');
-                }
-                
-                if (savedNotifications) setNotifications(savedNotifications);
-                setNotificationTime(savedNotificationTime);
-                
-                // 通知権限をチェック
-                if ('Notification' in window && savedNotifications) {
-                    if (Notification.permission === 'default') {
-                        Notification.requestPermission();
-                    }
-                }
-
-                // PWA install prompt
-                window.addEventListener('beforeinstallprompt', (e) => {
-                    e.preventDefault();
-                    setDeferredPrompt(e);
-                    setShowInstallButton(true);
-                });
-
-                // Service Worker registration
-                if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register('/service-worker.js')
-                        .then((registration) => {
-                            console.log('SW registered: ', registration);
-                        })
-                        .catch((registrationError) => {
-                            console.log('SW registration failed: ', registrationError);
-                        });
-                }
-            }, []);
-
-            // PWA install
-            const handleInstallClick = () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            setShowInstallButton(false);
-                        }
-                        setDeferredPrompt(null);
-                    });
-                }
-            };
-
-            // 地域設定を保存
-            const saveAreaSetting = (area) => {
-                setSelectedArea(area);
-                localStorage.setItem('selectedArea', area);
-                setShowAreaSelect(false);
-            };
-
-            // 通知設定を保存
-            const toggleNotifications = async () => {
-                if (!notifications) {
-                    if ('Notification' in window) {
-                        const permission = await Notification.requestPermission();
-                        if (permission === 'granted') {
-                            setNotifications(true);
-                            localStorage.setItem('notifications', 'true');
-                            scheduleNotifications();
-                        } else {
-                            alert('通知の許可が必要です。ブラウザの設定で通知を許可してください。');
-                        }
-                    }
-                } else {
-                    setNotifications(false);
-                    localStorage.setItem('notifications', 'false');
-                }
-            };
-
-            // 通知時間を保存
-            const updateNotificationTime = (type, time) => {
-                const newTime = { ...notificationTime, [type]: time };
-                setNotificationTime(newTime);
-                localStorage.setItem('notificationTime', JSON.stringify(newTime));
-            };
-
-            // 通知をスケジュール
-            const scheduleNotifications = () => {
-                if (!selectedArea || !areaSchedules[selectedArea]) return;
-                console.log(`通知スケジュール: 前日${notificationTime.evening}, 当日${notificationTime.morning}`);
-            };
-
-            // カレンダーの日付変更
-            const changeCalendarMonth = (direction) => {
-                const newDate = new Date(calendarDate);
-                newDate.setMonth(newDate.getMonth() + direction);
-                setCalendarDate(newDate);
-            };
-
-            // カレンダー用のゴミ判定
-            const getGarbageForDate = (date) => {
-                if (!selectedArea || !areaSchedules[selectedArea]) return null;
-                
-                const dayOfWeek = date.getDay();
-                const schedule = areaSchedules[selectedArea].schedule;
-                
-                for (const [type, days] of Object.entries(schedule)) {
-                    if (days.includes(dayOfWeek)) {
-                        return type;
-                    }
-                }
-                return null;
-            };
-
-            // 今日のゴミを取得
-            const getTodayGarbage = () => {
-                if (!selectedArea || !areaSchedules[selectedArea]) return null;
-                
-                const today = currentDate.getDay();
-                const schedule = areaSchedules[selectedArea].schedule;
-                
-                for (const [type, days] of Object.entries(schedule)) {
-                    if (days.includes(today)) {
-                        return type;
-                    }
-                }
-                return null;
-            };
-
-            const todayGarbage = getTodayGarbage();
-
-            // 分別検索用のサンプルデータ
-            const garbageItems = [
-                { name: 'ペットボトル', type: 'ペットボトル', note: 'キャップとラベルは容器包装プラスチック' },
-                { name: '新聞紙', type: '資源物', note: '紐で十文字に束ねる' },
-                { name: '生ごみ', type: '燃やすごみ', note: '水分をよく切って' },
-                { name: 'プラスチック容器', type: '容器包装プラスチック', note: '汚れを落としてから' },
-                { name: '電池', type: '有害危険ごみ', note: 'テープで絶縁してから' },
-                { name: '空き缶', type: '燃やさないごみ', note: '中身を空にして' },
-                { name: 'アルミ缶', type: '燃やさないごみ', note: '中身を空にして' },
-                { name: '雑誌', type: '資源物', note: '紐で十文字に束ねる' },
-                { name: '段ボール', type: '資源物', note: '紐で十文字に束ねる' },
-                { name: '食品トレー', type: '容器包装プラスチック', note: '汚れを落としてから' }
-            ];
-
-            const filteredItems = garbageItems.filter(item =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
-            const formatDate = (date) => {
-                return new Intl.DateTimeFormat('ja-JP', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    weekday: 'long'
-                }).format(date);
-            };
-
-            const HomeTab = () => (
-                React.createElement('div', { className: 'space-y-6' },
-                    // PWA Install Banner
-                    showInstallButton && React.createElement('div', { className: 'bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg' },
-                        React.createElement('div', { className: 'flex items-center justify-between' },
-                            React.createElement('div', { className: 'flex items-center space-x-2' },
-                                React.createElement('📱', { className: 'text-lg' }),
-                                React.createElement('div', null,
-                                    React.createElement('p', { className: 'text-sm font-medium text-blue-700' }, 'アプリをインストール'),
-                                    React.createElement('p', { className: 'text-xs text-blue-600' }, 'ホーム画面に追加して素早くアクセス')
-                                )
-                            ),
-                            React.createElement('button', { 
-                                onClick: handleInstallClick,
-                                className: 'text-blue-600 hover:text-blue-800 text-sm font-medium bg-white px-3 py-1 rounded'
-                            }, 'インストール')
-                        )
-                    ),
-
-                    // 地域設定
-                    !selectedArea && React.createElement('div', { className: 'bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg' },
-                        React.createElement('div', { className: 'flex items-center justify-between' },
-                            React.createElement('div', { className: 'flex items-center space-x-2' },
-                                React.createElement(MapPin, { className: 'w-5 h-5 text-yellow-600' }),
-                                React.createElement('p', { className: 'text-sm text-yellow-700' },
-                                    React.createElement('strong', null, '地域を設定してください')
-                                )
-                            ),
-                            React.createElement('button', { 
-                                onClick: () => setActiveTab('settings'),
-                                className: 'text-yellow-600 hover:text-yellow-800 text-sm font-medium'
-                            }, '設定する')
-                        )
-                    ),
-
-                    // 今日の日付
-                    React.createElement('div', { className: 'text-center' },
-                        React.createElement('h2', { className: 'text-lg font-medium text-gray-600' }, formatDate(currentDate)),
-                        selectedArea && areaSchedules[selectedArea] && React.createElement('p', { className: 'text-sm text-blue-600 mt-1' }, areaSchedules[selectedArea].name)
-                    ),
-
-                    // 今日のゴミ
-                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
-                        React.createElement('div', { className: 'flex items-center space-x-3 mb-4' },
-                            React.createElement(Clock, { className: 'w-6 h-6 text-blue-600' }),
-                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800' }, '今日のゴミ'),
-                            notifications && React.createElement(Bell, { className: 'w-5 h-5 text-green-500', title: '通知ON' })
-                        ),
+                    <!-- Today's Garbage -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon text-blue-600">🕐</span>
+                            <h3 class="card-title">今日のゴミ</h3>
+                            <span id="notification-indicator" class="icon text-green-500 hidden" title="通知ON">🔔</span>
+                        </div>
                         
-                        todayGarbage ? React.createElement('div', { className: 'flex items-center space-x-4' },
-                            React.createElement('div', { className: `w-12 h-12 ${garbageTypes[todayGarbage].color} rounded-full flex items-center justify-center text-white text-xl` },
-                                garbageTypes[todayGarbage].icon
-                            ),
-                            React.createElement('div', null,
-                                React.createElement('p', { className: 'text-lg font-semibold text-gray-800' }, todayGarbage),
-                                React.createElement('p', { className: 'text-sm text-gray-600' }, '午前8時30分までに出してください')
-                            )
-                        ) : selectedArea ? React.createElement('div', { className: 'text-center py-8' },
-                            React.createElement('p', { className: 'text-gray-500 text-lg' }, '今日はゴミ出しの日ではありません'),
-                            React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '次回のゴミ出し日をカレンダーで確認しましょう')
-                        ) : React.createElement('div', { className: 'text-center py-8' },
-                            React.createElement('p', { className: 'text-gray-500 text-lg' }, '地域を設定してください'),
-                            React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '設定するとゴミ出し日がわかります')
-                        )
-                    ),
+                        <div id="today-garbage-content">
+                            <div class="text-center py-8">
+                                <p class="text-gray-500 text-lg">地域を設定してください</p>
+                                <p class="text-sm text-gray-400 mt-1">設定するとゴミ出し日がわかります</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    // お知らせエリア
-                    React.createElement('div', { className: 'bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg' },
-                        React.createElement('div', { className: 'flex items-center space-x-2' },
-                            React.createElement(Bell, { className: 'w-5 h-5 text-blue-600' }),
-                            React.createElement('p', { className: 'text-sm text-blue-700' },
-                                React.createElement('strong', null, 'お知らせ：'),
-                                '雨の日は資源物（紙類・布類）の回収が中止される場合があります'
-                            )
-                        )
-                    ),
+                    <!-- Notice -->
+                    <div class="alert alert-info">
+                        <div class="flex items-center gap-2">
+                            <span class="icon">🔔</span>
+                            <p class="text-sm text-blue-700">
+                                <strong>お知らせ：</strong>雨の日は資源物（紙類・布類）の回収が中止される場合があります
+                            </p>
+                        </div>
+                    </div>
 
-                    // クイックアクション
-                    React.createElement('div', { className: 'grid grid-cols-2 gap-4' },
-                        React.createElement('button', { 
-                            onClick: () => setActiveTab('search'),
-                            className: 'bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors'
-                        },
-                            React.createElement(Search, { className: 'w-8 h-8' }),
-                            React.createElement('span', { className: 'font-medium' }, '分別を調べる')
-                        ),
-                        React.createElement('button', { 
-                            onClick: () => setActiveTab('calendar'),
-                            className: 'bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl flex flex-col items-center space-y-2 transition-colors'
-                        },
-                            React.createElement(Calendar, { className: 'w-8 h-8' }),
-                            React.createElement('span', { className: 'font-medium' }, 'カレンダー')
-                        )
-                    )
-                )
-            );
+                    <!-- Quick Actions -->
+                    <div class="grid-cols-2">
+                        <button onclick="showTab('search')" class="btn bg-blue-500 hover:bg-blue-600 text-white p-4 rounded-xl flex flex-col items-center gap-2 transition-colors">
+                            <span class="icon text-2xl">🔍</span>
+                            <span class="font-medium">分別を調べる</span>
+                        </button>
+                        <button onclick="showTab('calendar')" class="btn bg-green-500 hover:bg-green-600 text-white p-4 rounded-xl flex flex-col items-center gap-2 transition-colors">
+                            <span class="icon text-2xl">📅</span>
+                            <span class="font-medium">カレンダー</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-            const SearchTab = () => (
-                React.createElement('div', { className: 'space-y-6' },
-                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
-                        React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
-                            React.createElement(Search, { className: 'w-6 h-6 mr-2 text-blue-600' }),
-                            'ゴミの分別を調べる'
-                        ),
+            <!-- Search Tab -->
+            <div id="search-tab" class="tab-content hidden">
+                <div class="space-y-6">
+                    <div class="card">
+                        <h3 class="card-title flex items-center">
+                            <span class="icon text-blue-600 mr-2">🔍</span>
+                            ゴミの分別を調べる
+                        </h3>
 
-                        React.createElement('div', { className: 'relative mb-6' },
-                            React.createElement('input', {
-                                type: 'text',
-                                placeholder: '捨てたいものを入力してください（例：ペットボトル）',
-                                value: searchTerm,
-                                onChange: (e) => setSearchTerm(e.target.value),
-                                className: 'w-full p-4 border border-gray-300 rounded-lg text-lg focus:outline-none focus:ring-2 focus:ring-blue-500'
-                            }),
-                            React.createElement(Search, { className: 'absolute right-3 top-4 w-6 h-6 text-gray-400' })
-                        ),
+                        <div class="relative mb-6">
+                            <input type="text" id="search-input" placeholder="捨てたいものを入力してください（例：ペットボトル）" class="input">
+                        </div>
 
-                        React.createElement('div', { className: 'space-y-3' },
-                            filteredItems.length > 0 ? filteredItems.map((item, index) => (
-                                React.createElement('div', { key: index, className: 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors' },
-                                    React.createElement('div', { className: 'flex items-center space-x-4' },
-                                        React.createElement('div', { className: `w-10 h-10 ${garbageTypes[item.type].color} rounded-full flex items-center justify-center text-white` },
-                                            garbageTypes[item.type].icon
-                                        ),
-                                        React.createElement('div', { className: 'flex-1' },
-                                            React.createElement('h4', { className: 'font-semibold text-gray-800' }, item.name),
-                                            React.createElement('p', { className: 'text-blue-600 font-medium' }, item.type),
-                                            item.note && React.createElement('p', { className: 'text-sm text-gray-600 mt-1' }, item.note)
-                                        )
-                                    )
-                                )
-                            )) : searchTerm ? React.createElement('div', { className: 'text-center py-8' },
-                                React.createElement('p', { className: 'text-gray-500' }, `「${searchTerm}」の検索結果が見つかりませんでした`),
-                                React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, '別のキーワードで検索してみてください')
-                            ) : React.createElement('div', { className: 'text-center py-8' },
-                                React.createElement('p', { className: 'text-gray-500' }, '調べたいゴミの名前を入力してください'),
-                                React.createElement('p', { className: 'text-sm text-gray-400 mt-1' }, 'ペットボトル、新聞紙、電池など')
-                            )
-                        )
-                    )
-                )
-            );
+                        <div id="search-results" class="space-y-3">
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">調べたいゴミの名前を入力してください</p>
+                                <p class="text-sm text-gray-400 mt-1">ペットボトル、新聞紙、電池など</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-            const CalendarTab = () => {
-                if (!selectedArea) {
-                    return React.createElement('div', { className: 'space-y-6' },
-                        React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
-                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
-                                React.createElement(Calendar, { className: 'w-6 h-6 mr-2 text-green-600' }),
-                                'ゴミ出しカレンダー'
-                            ),
-                            React.createElement('div', { className: 'text-center py-8' },
-                                React.createElement('p', { className: 'text-gray-500' }, '地域を設定してください'),
-                                React.createElement('button', { 
-                                    onClick: () => setActiveTab('settings'),
-                                    className: 'mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600'
-                                }, '地域を設定する')
-                            )
-                        )
-                    );
-                }
+            <!-- Calendar Tab -->
+            <div id="calendar-tab" class="tab-content hidden">
+                <div class="space-y-6">
+                    <div class="card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="card-title flex items-center">
+                                <span class="icon text-green-600 mr-2">📅</span>
+                                ゴミ出しカレンダー
+                            </h3>
+                            <div class="flex items-center gap-3">
+                                <button onclick="changeMonth(-1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <span class="icon">◀</span>
+                                </button>
+                                <span id="calendar-month" class="font-semibold text-lg text-gray-800 min-w-[120px] text-center"></span>
+                                <button onclick="changeMonth(1)" class="p-2 hover:bg-gray-100 rounded-lg">
+                                    <span class="icon">▶</span>
+                                </button>
+                            </div>
+                        </div>
 
-                const year = calendarDate.getFullYear();
-                const month = calendarDate.getMonth();
-                const today = new Date();
-                
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const daysInMonth = lastDay.getDate();
-                const startingDayOfWeek = firstDay.getDay();
-                
-                const monthNames = [
-                    '1月', '2月', '3月', '4月', '5月', '6月',
-                    '7月', '8月', '9月', '10月', '11月', '12月'
-                ];
-                
-                const weekDayNames = ['日', '月', '火', '水', '木', '金', '土'];
-                
-                const calendarDays = [];
-                
-                // 前月の日付を埋める
-                for (let i = startingDayOfWeek - 1; i >= 0; i--) {
-                    const prevDate = new Date(year, month, -i);
-                    calendarDays.push({ date: prevDate, isCurrentMonth: false });
-                }
-                
-                // 当月の日付
-                for (let day = 1; day <= daysInMonth; day++) {
-                    const currentDate = new Date(year, month, day);
-                    calendarDays.push({ date: currentDate, isCurrentMonth: true });
-                }
-                
-                // 次月の日付を埋める（42セルまで）
-                const remainingCells = 42 - calendarDays.length;
-                for (let day = 1; day <= remainingCells; day++) {
-                    const nextDate = new Date(year, month + 1, day);
-                    calendarDays.push({ date: nextDate, isCurrentMonth: false });
-                }
+                        <div id="calendar-content">
+                            <div class="text-center py-8">
+                                <p class="text-gray-500">地域を設定してください</p>
+                                <button onclick="showTab('settings')" class="mt-2 btn btn-primary">地域を設定する</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                return React.createElement('div', { className: 'space-y-6' },
-                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
-                        // ヘッダー
-                        React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-                            React.createElement('h3', { className: 'text-xl font-bold text-gray-800 flex items-center' },
-                                React.createElement(Calendar, { className: 'w-6 h-6 mr-2 text-green-600' }),
-                                'ゴミ出しカレンダー'
-                            ),
-                            React.createElement('div', { className: 'flex items-center space-x-3' },
-                                React.createElement('button', { 
-                                    onClick: () => changeCalendarMonth(-1),
-                                    className: 'p-2 hover:bg-gray-100 rounded-lg'
-                                },
-                                    React.createElement(ChevronLeft, { className: 'w-5 h-5 text-gray-600' })
-                                ),
-                                React.createElement('span', { className: 'font-semibold text-lg text-gray-800 min-w-[120px] text-center' },
-                                    `${year}年${monthNames[month]}`
-                                ),
-                                React.createElement('button', { 
-                                    onClick: () => changeCalendarMonth(1),
-                                    className: 'p-2 hover:bg-gray-100 rounded-lg'
-                                },
-                                    React.createElement(ChevronRight, { className: 'w-5 h-5 text-gray-600' })
-                                )
-                            )
-                        ),
-
-                        // カレンダーヘッダー
-                        React.createElement('div', { className: 'grid grid-cols-7 gap-1 mb-2' },
-                            weekDayNames.map(day => (
-                                React.createElement('div', { key: day, className: 'text-center text-sm font-medium text-gray-600 py-2' }, day)
-                            ))
-                        ),
-
-                        // カレンダー日付
-                        React.createElement('div', { className: 'grid grid-cols-7 gap-1' },
-                            calendarDays.map((dayInfo, index) => {
-                                const { date, isCurrentMonth } = dayInfo;
-                                const isToday = date.toDateString() === today.toDateString();
-                                const garbageType = getGarbageForDate(date);
-                                
-                                return React.createElement('div', {
-                                    key: index,
-                                    className: `min-h-[60px] p-1 border border-gray-100 rounded-lg ${
-                                        isCurrentMonth ? 'bg-white' : 'bg-gray-50'
-                                    } ${isToday ? 'ring-2 ring-blue-500' : ''}`
-                                },
-                                    React.createElement('div', { 
-                                        className: `text-sm ${
-                                            isCurrentMonth ? 'text-gray-900' : 'text-gray-400'
-                                        } ${isToday ? 'font-bold' : ''}`
-                                    }, date.getDate()),
-                                    garbageType && isCurrentMonth && React.createElement('div', { 
-                                        className: `mt-1 p-1 ${garbageTypes[garbageType].color} rounded text-white text-xs text-center`
-                                    }, garbageTypes[garbageType].icon)
-                                );
-                            })
-                        ),
-
-                        // 凡例
-                        React.createElement('div', { className: 'mt-4 grid grid-cols-2 gap-2' },
-                            Object.entries(garbageTypes).map(([type, info]) => (
-                                React.createElement('div', { key: type, className: 'flex items-center space-x-2 text-xs' },
-                                    React.createElement('div', { className: `w-4 h-4 ${info.color} rounded flex items-center justify-center text-white text-xs` },
-                                        info.icon
-                                    ),
-                                    React.createElement('span', { className: 'text-gray-600' }, type)
-                                )
-                            ))
-                        ),
-
-                        // 収集日一覧（折りたたみ可能）
-                        React.createElement('div', { className: 'mt-6 border-t pt-4' },
-                            React.createElement('details', { className: 'group' },
-                                React.createElement('summary', { className: 'cursor-pointer text-sm font-medium text-gray-700 hover:text-gray-900' },
-                                    '📋 収集日一覧を表示'
-                                ),
-                                React.createElement('div', { className: 'mt-3 space-y-2' },
-                                    Object.entries(garbageTypes).map(([type, info]) => {
-                                        const schedule = areaSchedules[selectedArea].schedule[type];
-                                        const scheduleText = schedule ? schedule.map(day => weekDayNames[day]).join('・') : '未設定';
-                                        
-                                        return React.createElement('div', { key: type, className: 'flex items-center space-x-3 p-2 bg-gray-50 rounded' },
-                                            React.createElement('div', { className: `w-6 h-6 ${info.color} rounded flex items-center justify-center text-white text-xs` },
-                                                info.icon
-                                            ),
-                                            React.createElement('div', { className: 'flex-1 text-sm' },
-                                                React.createElement('span', { className: 'font-medium' }, type),
-                                                React.createElement('span', { className: 'text-gray-600 ml-2' }, scheduleText)
-                                            )
-                                        );
-                                    })
-                                )
-                            )
-                        ),
-
-                        React.createElement('div', { className: 'mt-6 p-4 bg-blue-50 rounded-lg' },
-                            React.createElement('h4', { className: 'font-semibold text-blue-800 mb-2' }, '注意事項'),
-                            React.createElement('ul', { className: 'text-sm text-blue-700 space-y-1' },
-                                React.createElement('li', null, '• 午前8時30分までに指定の集積所に出してください'),
-                                React.createElement('li', null, '• 雨の日は資源物（紙類・布類）は出さないでください'),
-                                React.createElement('li', null, '• 指定のゴミ袋を使用してください')
-                            )
-                        )
-                    )
-                );
-            };
-
-            const SettingsTab = () => (
-                React.createElement('div', { className: 'space-y-6' },
-                    React.createElement('div', { className: 'bg-white rounded-xl shadow-md p-6' },
-                        React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-4 flex items-center' },
-                            React.createElement(Settings, { className: 'w-6 h-6 mr-2 text-gray-600' }),
-                            'アプリ設定'
-                        ),
+            <!-- Settings Tab -->
+            <div id="settings-tab" class="tab-content hidden">
+                <div class="space-y-6">
+                    <div class="card">
+                        <h3 class="card-title flex items-center">
+                            <span class="icon text-gray-600 mr-2">⚙️</span>
+                            アプリ設定
+                        </h3>
                         
-                        // 地域設定
-                        React.createElement('div', { className: 'space-y-4' },
-                            React.createElement('div', null,
-                                React.createElement('label', { className: 'block text-sm font-medium text-gray-700 mb-2' },
-                                    'お住まいの地域'
-                                ),
-                                React.createElement('div', { className: 'relative' },
-                                    React.createElement('button', {
-                                        onClick: () => setShowAreaSelect(!showAreaSelect),
-                                        className: 'w-full p-3 border border-gray-300 rounded-lg text-left flex items-center justify-between focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                    },
-                                        React.createElement('span', { className: selectedArea && areaSchedules[selectedArea] ? 'text-gray-900' : 'text-gray-500' },
-                                            selectedArea && areaSchedules[selectedArea] ? areaSchedules[selectedArea].name : '地域を選択してください'
-                                        ),
-                                        React.createElement(ChevronDown, { className: 'w-5 h-5 text-gray-400' })
-                                    ),
+                        <div class="space-y-4">
+                            <!-- Area Setting -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">お住まいの地域</label>
+                                <div class="relative">
+                                    <button id="area-select-btn" onclick="toggleAreaSelect()" class="w-full p-3 border border-gray-300 rounded-lg text-left flex items-center justify-between">
+                                        <span id="area-select-text" class="text-gray-500">地域を選択してください</span>
+                                        <span class="icon">⌄</span>
+                                    </button>
                                     
-                                    showAreaSelect && React.createElement('div', { className: 'absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg' },
-                                        Object.entries(areaSchedules).slice(1).map(([key, area]) => (
-                                            React.createElement('button', {
-                                                key: key,
-                                                onClick: () => saveAreaSetting(key),
-                                                className: 'w-full p-3 text-left hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg border-b border-gray-200 last:border-b-0'
-                                            }, area.name)
-                                        ))
-                                    )
-                                )
-                            ),
+                                    <div id="area-select-dropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg hidden">
+                                        <!-- Area options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
 
-                            // 通知設定
-                            React.createElement('div', { className: 'border-t pt-4' },
-                                React.createElement('div', { className: 'flex items-center justify-between mb-4' },
-                                    React.createElement('div', null,
-                                        React.createElement('h4', { className: 'font-medium text-gray-900' }, 'プッシュ通知'),
-                                        React.createElement('p', { className: 'text-sm text-gray-600' }, 'ゴミ出し日の前日と当日に通知します')
-                                    ),
-                                    React.createElement('button', {
-                                        onClick: toggleNotifications,
-                                        className: `relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                                            notifications ? 'bg-blue-600' : 'bg-gray-200'
-                                        }`
-                                    },
-                                        React.createElement('span', {
-                                            className: `inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                                                notifications ? 'translate-x-6' : 'translate-x-1'
-                                            }`
-                                        })
-                                    )
-                                ),
+                            <!-- Notification Settings -->
+                            <div class="border-t pt-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h4 class="font-medium text-gray-900">プッシュ通知</h4>
+                                        <p class="text-sm text-gray-600">ゴミ出し日の前日と当日に通知します</p>
+                                    </div>
+                                    <div class="toggle" onclick="toggleNotifications()">
+                                        <span class="toggle-switch"></span>
+                                    </div>
+                                </div>
 
-                                // 通知時間設定
-                                notifications && React.createElement('div', { className: 'space-y-3' },
-                                    React.createElement('div', { className: 'flex items-center justify-between' },
-                                        React.createElement('span', { className: 'text-sm text-gray-700' }, '前日通知時間'),
-                                        React.createElement('input', {
-                                            type: 'time',
-                                            value: notificationTime.evening,
-                                            onChange: (e) => updateNotificationTime('evening', e.target.value),
-                                            className: 'px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                        })
-                                    ),
-                                    React.createElement('div', { className: 'flex items-center justify-between' },
-                                        React.createElement('span', { className: 'text-sm text-gray-700' }, '当日通知時間'),
-                                        React.createElement('input', {
-                                            type: 'time',
-                                            value: notificationTime.morning,
-                                            onChange: (e) => updateNotificationTime('morning', e.target.value),
-                                            className: 'px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
-                                        })
-                                    )
-                                )
-                            ),
+                                <!-- Notification Time Settings -->
+                                <div id="notification-times" class="space-y-3 hidden">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-700">前日通知時間</span>
+                                        <input type="time" id="evening-time" value="21:00" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-700">当日通知時間</span>
+                                        <input type="time" id="morning-time" value="07:00" class="px-3 py-1 border border-gray-300 rounded text-sm">
+                                    </div>
+                                </div>
 
-                            // 通知の説明
-                            notifications && React.createElement('div', { className: 'bg-green-50 p-3 rounded-lg mt-4' },
-                                React.createElement('p', { className: 'text-sm text-green-700' },
-                                    `✅ 通知が有効です。前日${notificationTime.evening}と当日${notificationTime.morning}に通知されます。`
-                                )
-                            )
-                        ),
+                                <div id="notification-status" class="bg-green-50 p-3 rounded-lg mt-4 hidden">
+                                    <p class="text-sm text-green-700">✅ 通知が有効です。前日21:00と当日07:00に通知されます。</p>
+                                </div>
+                            </div>
 
-                        // アプリ情報
-                        React.createElement('div', { className: 'mt-6 pt-4 border-t' },
-                            React.createElement('h4', { className: 'font-medium text-gray-900 mb-2' }, 'アプリについて'),
-                            React.createElement('div', { className: 'text-sm text-gray-600 space-y-1' },
-                                React.createElement('p', null, 'バージョン: 1.0.0'),
-                                React.createElement('p', null, '対象地域: 流山市'),
-                                React.createElement('p', null, 'データ更新: 2025年6月'),
-                                React.createElement('p', null, 'PWA対応 - オフライン利用可能')
-                            )
-                        ),
+                            <!-- App Info -->
+                            <div class="mt-6 pt-4 border-t">
+                                <h4 class="font-medium text-gray-900 mb-2">アプリについて</h4>
+                                <div class="text-sm text-gray-600 space-y-1">
+                                    <p>バージョン: 1.0.0</p>
+                                    <p>対象地域: 流山市</p>
+                                    <p>データ更新: 2025年6月</p>
+                                    <p>PWA対応 - オフライン利用可能</p>
+                                </div>
+                            </div>
 
-                        // 免責事項・注意事項
-                        React.createElement('div', { className: 'mt-6 pt-4 border-t' },
-                            React.createElement('h4', { className: 'font-medium text-gray-900 mb-3' }, '⚠️ 重要な注意事項'),
-                            React.createElement('div', { className: 'bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3' },
-                                React.createElement('div', { className: 'flex items-start space-x-2' },
-                                    React.createElement('span', { className: 'text-yellow-600 font-bold text-sm mt-0.5' }, '●'),
-                                    React.createElement('div', { className: 'text-sm text-yellow-800' },
-                                        React.createElement('strong', null, '非公式アプリです'),
-                                        React.createElement('p', { className: 'mt-1' }, 'このアプリは流山市公式ではなく、個人が開発したものです。')
-                                    )
-                                ),
-                                React.createElement('div', { className: 'flex items-start space-x-2' },
-                                    React.createElement('span', { className: 'text-yellow-600 font-bold text-sm mt-0.5' }, '●'),
-                                    React.createElement('div', { className: 'text-sm text-yellow-800' },
-                                        React.createElement('strong', null, '最新情報の確認'),
-                                        React.createElement('p', { className: 'mt-1' }, 'ゴミ出しルールの変更等、最新情報は '),
-                                        React.createElement('a', { 
-                                            href: 'https://www.city.nagareyama.chiba.jp/life/1002401/1002416/1002418.html',
-                                            target: '_blank',
-                                            rel: 'noopener noreferrer',
-                                            className: 'text-blue-600 underline hover:text-blue-800'
-                                        }, '流山市公式サイト'),
-                                        React.createElement('span', null, ' でご確認ください。')
-                                    )
-                                ),
-                                React.createElement('div', { className: 'flex items-start space-x-2' },
-                                    React.createElement('span', { className: 'text-yellow-600 font-bold text-sm mt-0.5' }, '●'),
-                                    React.createElement('div', { className: 'text-sm text-yellow-800' },
-                                        React.createElement('strong', null, '免責事項'),
-                                        React.createElement('p', { className: 'mt-1' }, '本アプリの情報により生じた損害について、開発者は一切の責任を負いません。')
-                                    )
-                                )
-                            )
-                        ),
+                            <!-- Important Notice -->
+                            <div class="mt-6 pt-4 border-t">
+                                <h4 class="font-medium text-gray-900 mb-3">⚠️ 重要な注意事項</h4>
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 space-y-3">
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-yellow-600 font-bold text-sm mt-0.5">●</span>
+                                        <div class="text-sm text-yellow-800">
+                                            <strong>非公式アプリです</strong>
+                                            <p class="mt-1">このアプリは流山市公式ではなく、個人が開発したものです。</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-yellow-600 font-bold text-sm mt-0.5">●</span>
+                                        <div class="text-sm text-yellow-800">
+                                            <strong>最新情報の確認</strong>
+                                            <p class="mt-1">ゴミ出しルールの変更等、最新情報は 
+                                                <a href="https://www.city.nagareyama.chiba.jp/life/1002401/1002416/1002418.html" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800">流山市公式サイト</a> でご確認ください。
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <span class="text-yellow-600 font-bold text-sm mt-0.5">●</span>
+                                        <div class="text-sm text-yellow-800">
+                                            <strong>免責事項</strong>
+                                            <p class="mt-1">本アプリの情報により生じた損害について、開発者は一切の責任を負いません。</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                        // 開発者情報
-                        React.createElement('div', { className: 'mt-4 pt-4 border-t' },
-                            React.createElement('h4', { className: 'font-medium text-gray-900 mb-2' }, '開発者情報'),
-                            React.createElement('div', { className: 'text-sm text-gray-600 space-y-1' },
-                                React.createElement('p', null, '個人開発プロジェクト'),
-                                React.createElement('p', null, 
-                                    'GitHub: ',
-                                    React.createElement('a', { 
-                                        href: 'https://github.com/Matsuri0913/nagareyama-garbage-app',
-                                        target: '_blank',
-                                        rel: 'noopener noreferrer',
-                                        className: 'text-blue-600 underline hover:text-blue-800'
-                                    }, 'nagareyama-garbage-app')
-                                ),
-                                React.createElement('p', { className: 'text-xs text-gray-500 mt-2' }, '改善提案やバグ報告はGitHubまでお願いします')
-                            )
-                        )
-                    )
-                )
-            );
+                            <!-- Developer Info -->
+                            <div class="mt-4 pt-4 border-t">
+                                <h4 class="font-medium text-gray-900 mb-2">開発者情報</h4>
+                                <div class="text-sm text-gray-600 space-y-1">
+                                    <p>個人開発プロジェクト</p>
+                                    <p>GitHub: <a href="https://github.com/Matsuri0913/nagareyama-garbage-app" target="_blank" rel="noopener noreferrer" class="text-blue-600 underline hover:text-blue-800">nagareyama-garbage-app</a></p>
+                                    <p class="text-xs text-gray-500 mt-2">改善提案やバグ報告はGitHubまでお願いします</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            return React.createElement('div', { className: 'max-w-md mx-auto bg-gray-50 min-h-screen' },
-                // ヘッダー
-                React.createElement('div', { className: 'bg-blue-600 text-white p-4 sticky top-0 z-10' },
-                    React.createElement('div', { className: 'flex items-center space-x-2' },
-                        React.createElement(MapPin, { className: 'w-6 h-6' }),
-                        React.createElement('div', null,
-                            React.createElement('h1', { className: 'text-lg font-bold' }, '流山市ゴミ分別アプリ'),
-                            React.createElement('p', { className: 'text-sm text-blue-100' }, '正しい分別で環境を守ろう')
-                        )
-                    )
-                ),
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showTab('home')">
+                <span class="nav-icon icon">🗑️</span>
+                <span class="nav-label">ホーム</span>
+            </div>
+            <div class="nav-item" onclick="showTab('search')">
+                <span class="nav-icon icon">🔍</span>
+                <span class="nav-label">検索</span>
+            </div>
+            <div class="nav-item" onclick="showTab('calendar')">
+                <span class="nav-icon icon">📅</span>
+                <span class="nav-label">カレンダー</span>
+            </div>
+            <div class="nav-item" onclick="showTab('settings')">
+                <span class="nav-icon icon">⚙️</span>
+                <span class="nav-label">設定</span>
+            </div>
+        </div>
+    </div>
 
-                // メインコンテンツ
-                React.createElement('div', { className: 'p-4 pb-20' },
-                    activeTab === 'home' && React.createElement(HomeTab),
-                    activeTab === 'search' && React.createElement(SearchTab),
-                    activeTab === 'calendar' && React.createElement(CalendarTab),
-                    activeTab === 'settings' && React.createElement(SettingsTab)
-                ),
-
-                // ボトムナビゲーション
-                React.createElement('div', { className: 'fixed bottom-0 left-1/2 transform -translate-x-1/2 w-full max-w-md bg-white border-t border-gray-200' },
-                    React.createElement('div', { className: 'flex' },
-                        [
-                            { id: 'home', icon: Trash2, label: 'ホーム' },
-                            { id: 'search', icon: Search, label: '検索' },
-                            { id: 'calendar', icon: Calendar, label: 'カレンダー' },
-                            { id: 'settings', icon: Settings, label: '設定' }
-                        ].map(({ id, icon: Icon, label }) => (
-                            React.createElement('button', {
-                                key: id,
-                                onClick: () => setActiveTab(id),
-                                className: `flex-1 py-3 px-2 text-center transition-colors ${
-                                    activeTab === id 
-                                        ? 'text-blue-600 bg-blue-50' 
-                                        : 'text-gray-600 hover:text-blue-600'
-                                }`
-                            },
-                                React.createElement(Icon, { className: 'w-6 h-6 mx-auto mb-1' }),
-                                React.createElement('span', { className: 'text-xs font-medium' }, label)
-                            )
-                        ))
-                    )
-                )
-            );
+    <script>
+        // アプリの状態管理
+        let appState = {
+            currentDate: new Date(),
+            selectedArea: '',
+            notifications: false,
+            notificationTime: { evening: '21:00', morning: '07:00' },
+            calendarDate: new Date(),
+            searchTerm: '',
+            deferredPrompt: null,
+            showInstallButton: false
         };
 
-        ReactDOM.render(React.createElement(NagareyamaGarbageApp), document.getElementById('root'));
+        // 流山市の地域とゴミ出し曜日の定義
+        const areaSchedules = {
+            '': { name: '地域を選択してください', schedule: {} },
+            'north': { 
+                name: '北部（美田・野々下・三輪野山・桐ケ谷・長崎など)', 
+                schedule: {
+                    '燃やすごみ': [2, 5], // 火・金
+                    '容器包装プラスチック': [1], // 月
+                    '燃やさないごみ': [4], // 木（第2・4週）
+                    'ペットボトル': [4], // 木（第1・3週）
+                    '有害危険ごみ': [4], // 木（第1・3週）
+                    '資源物': [6] // 土
+                }
+            },
+            'central': { 
+                name: '中央部（流山・平和台・加・西平井など)', 
+                schedule: {
+                    '燃やすごみ': [1, 4], // 月・木
+                    '容器包装プラスチック': [2], // 火
+                    '燃やさないごみ': [5], // 金（第2・4週）
+                    'ペットボトル': [5], // 金（第1・3週）
+                    '有害危険ごみ': [5], // 金（第1・3週）
+                    '資源物': [0] // 日
+                }
+            },
+            'south': { 
+                name: '南部（南流山・鰭ヶ崎・前ケ崎など)', 
+                schedule: {
+                    '燃やすごみ': [1, 4], // 月・木
+                    '容器包装プラスチック': [2], // 火
+                    '燃やさないごみ': [5], // 金（第2・4週）
+                    'ペットボトル': [5], // 金（第1・3週）
+                    '有害危険ごみ': [5], // 金（第1・3週）
+                    '資源物': [0] // 日
+                }
+            },
+            'edogawadai': { 
+                name: '江戸川台地区（江戸川台東・江戸川台西・東深井など)', 
+                schedule: {
+                    '燃やすごみ': [2, 5], // 火・金
+                    '容器包装プラスチック': [4], // 木
+                    '燃やさないごみ': [3], // 水（第2・4週）
+                    'ペットボトル': [3], // 水（第1・3週）
+                    '有害危険ごみ': [3], // 水（第1・3週）
+                    '資源物': [6] // 土
+                }
+            },
+            'hatsuishi': { 
+                name: '初石地区（初石・西初石・東初石など)', 
+                schedule: {
+                    '燃やすごみ': [2, 5], // 火・金
+                    '容器包装プラスチック': [1], // 月
+                    '燃やさないごみ': [3], // 水（第2・4週）
+                    'ペットボトル': [3], // 水（第1・3週）
+                    '有害危険ごみ': [3], // 水（第1・3週）
+                    '資源物': [6] // 土
+                }
+            },
+            'ootakanomori': { 
+                name: 'おおたかの森地区（おおたかの森各方角・市野谷・駒木など)', 
+                schedule: {
+                    '燃やすごみ': [1, 4], // 月・木
+                    '容器包装プラスチック': [5], // 金
+                    '燃やさないごみ': [2], // 火（第2・4週）
+                    'ペットボトル': [2], // 火（第1・3週）
+                    '有害危険ごみ': [2], // 火（第1・3週）
+                    '資源物': [0] // 日
+                }
+            }
+        };
+
+        // ゴミの種類と色の定義
+        const garbageTypes = {
+            '燃やすごみ': { color: 'bg-red-500', icon: '🔥' },
+            '容器包装プラスチック': { color: 'bg-green-500', icon: '♻️' },
+            '燃やさないごみ': { color: 'bg-gray-500', icon: '🗑️' },
+            'ペットボトル': { color: 'bg-blue-500', icon: '🍼' },
+            '有害危険ごみ': { color: 'bg-yellow-500', icon: '⚠️' },
+            '資源物': { color: 'bg-purple-500', icon: '📰' }
+        };
+
+        // 分別検索用のサンプルデータ
+        const garbageItems = [
+            { name: 'ペットボトル', type: 'ペットボトル', note: 'キャップとラベルは容器包装プラスチック' },
+            { name: '新聞紙', type: '資源物', note: '紐で十文字に束ねる' },
+            { name: '生ごみ', type: '燃やすごみ', note: '水分をよく切って' },
+            { name: 'プラスチック容器', type: '容器包装プラスチック', note: '汚れを落としてから' },
+            { name: '電池', type: '有害危険ごみ', note: 'テープで絶縁してから' },
+            { name: '空き缶', type: '燃やさないごみ', note: '中身を空にして' },
+            { name: 'アルミ缶', type: '燃やさないごみ', note: '中身を空にして' },
+            { name: '雑誌', type: '資源物', note: '紐で十文字に束ねる' },
+            { name: '段ボール', type: '資源物', note: '紐で十文字に束ねる' },
+            { name: '食品トレー', type: '容器包装プラスチック', note: '汚れを落としてから' }
+        ];
+
+        // 初期化処理
+        function init() {
+            loadSettings();
+            updateCurrentDate();
+            updateTodayGarbage();
+            initSearchInput();
+            initAreaSelect();
+            initPWA();
+            
+            // 1分ごとに日付を更新
+            setInterval(updateCurrentDate, 60000);
+        }
+
+        // 設定の読み込み
+        function loadSettings() {
+            const savedArea = localStorage.getItem('selectedArea');
+            const savedNotifications = localStorage.getItem('notifications') === 'true';
+            const savedNotificationTime = JSON.parse(localStorage.getItem('notificationTime') || '{"evening":"21:00","morning":"07:00"}');
+            
+            if (savedArea && areaSchedules[savedArea]) {
+                appState.selectedArea = savedArea;
+                updateAreaWarning();
+                updateSelectedAreaName();
+            }
+            
+            appState.notifications = savedNotifications;
+            appState.notificationTime = savedNotificationTime;
+            
+            updateNotificationUI();
+            
+            if (savedNotifications && 'Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+        }
+
+        // 設定の保存
+        function saveSettings() {
+            localStorage.setItem('selectedArea', appState.selectedArea);
+            localStorage.setItem('notifications', appState.notifications.toString());
+            localStorage.setItem('notificationTime', JSON.stringify(appState.notificationTime));
+        }
+
+        // 現在日時の更新
+        function updateCurrentDate() {
+            appState.currentDate = new Date();
+            const dateElement = document.getElementById('current-date');
+            if (dateElement) {
+                dateElement.textContent = formatDate(appState.currentDate);
+            }
+        }
+
+        // 日付のフォーマット
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            }).format(date);
+        }
+
+        // タブの切り替え
+        function showTab(tabName) {
+            // すべてのタブを非表示
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.add('hidden'));
+            
+            // 指定されたタブを表示
+            const targetTab = document.getElementById(tabName + '-tab');
+            if (targetTab) {
+                targetTab.classList.remove('hidden');
+            }
+            
+            // ナビゲーションの状態を更新
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            const activeNavItem = document.querySelector(`.nav-item:nth-child(${getTabIndex(tabName)})`);
+            if (activeNavItem) {
+                activeNavItem.classList.add('active');
+            }
+            
+            // タブごとの初期化処理
+            if (tabName === 'calendar') {
+                initCalendar();
+            }
+        }
+
+        function getTabIndex(tabName) {
+            const tabOrder = { 'home': 1, 'search': 2, 'calendar': 3, 'settings': 4 };
+            return tabOrder[tabName] || 1;
+        }
+
+        // 今日のゴミを取得
+        function getTodayGarbage() {
+            if (!appState.selectedArea || !areaSchedules[appState.selectedArea]) return null;
+            
+            const today = appState.currentDate.getDay();
+            const schedule = areaSchedules[appState.selectedArea].schedule;
+            
+            for (const [type, days] of Object.entries(schedule)) {
+                if (days.includes(today)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        // 今日のゴミ表示の更新
+        function updateTodayGarbage() {
+            const contentElement = document.getElementById('today-garbage-content');
+            const todayGarbage = getTodayGarbage();
+            
+            if (todayGarbage && appState.selectedArea) {
+                const garbageInfo = garbageTypes[todayGarbage];
+                contentElement.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="garbage-badge ${garbageInfo.color}">
+                            ${garbageInfo.icon}
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-gray-800">${todayGarbage}</p>
+                            <p class="text-sm text-gray-600">午前8時30分までに出してください</p>
+                        </div>
+                    </div>
+                `;
+            } else if (appState.selectedArea) {
+                contentElement.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500 text-lg">今日はゴミ出しの日ではありません</p>
+                        <p class="text-sm text-gray-400 mt-1">次回のゴミ出し日をカレンダーで確認しましょう</p>
+                    </div>
+                `;
+            } else {
+                contentElement.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500 text-lg">地域を設定してください</p>
+                        <p class="text-sm text-gray-400 mt-1">設定するとゴミ出し日がわかります</p>
+                    </div>
+                `;
+            }
+        }
+
+        // 地域警告の表示/非表示
+        function updateAreaWarning() {
+            const warningElement = document.getElementById('area-warning');
+            if (appState.selectedArea) {
+                warningElement.classList.add('hidden');
+            } else {
+                warningElement.classList.remove('hidden');
+            }
+        }
+
+        // 選択された地域名の表示
+        function updateSelectedAreaName() {
+            const nameElement = document.getElementById('selected-area-name');
+            if (appState.selectedArea && areaSchedules[appState.selectedArea]) {
+                nameElement.textContent = areaSchedules[appState.selectedArea].name;
+                nameElement.classList.remove('hidden');
+            } else {
+                nameElement.classList.add('hidden');
+            }
+        }
+
+        // 地域選択の初期化
+        function initAreaSelect() {
+            const dropdown = document.getElementById('area-select-dropdown');
+            const selectText = document.getElementById('area-select-text');
+            
+            // ドロップダウンにオプションを追加
+            dropdown.innerHTML = '';
+            Object.entries(areaSchedules).slice(1).forEach(([key, area]) => {
+                const option = document.createElement('button');
+                option.className = 'w-full p-3 text-left hover:bg-gray-50 border-b border-gray-200 last:border-b-0';
+                option.textContent = area.name;
+                option.onclick = () => selectArea(key);
+                dropdown.appendChild(option);
+            });
+            
+            // 初期表示を更新
+            if (appState.selectedArea && areaSchedules[appState.selectedArea]) {
+                selectText.textContent = areaSchedules[appState.selectedArea].name;
+                selectText.className = 'text-gray-900';
+            }
+        }
+
+        // 地域選択ドロップダウンの表示切り替え
+        function toggleAreaSelect() {
+            const dropdown = document.getElementById('area-select-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // 地域の選択
+        function selectArea(areaKey) {
+            appState.selectedArea = areaKey;
+            const selectText = document.getElementById('area-select-text');
+            
+            selectText.textContent = areaSchedules[areaKey].name;
+            selectText.className = 'text-gray-900';
+            
+            toggleAreaSelect();
+            saveSettings();
+            updateAreaWarning();
+            updateSelectedAreaName();
+            updateTodayGarbage();
+        }
+
+        // 通知設定の切り替え
+        async function toggleNotifications() {
+            const toggle = document.querySelector('.toggle');
+            
+            if (!appState.notifications) {
+                if ('Notification' in window) {
+                    const permission = await Notification.requestPermission();
+                    if (permission === 'granted') {
+                        appState.notifications = true;
+                        toggle.classList.add('active');
+                        scheduleNotifications();
+                    } else {
+                        alert('通知の許可が必要です。ブラウザの設定で通知を許可してください。');
+                        return;
+                    }
+                }
+            } else {
+                appState.notifications = false;
+                toggle.classList.remove('active');
+            }
+            
+            updateNotificationUI();
+            saveSettings();
+        }
+
+        // 通知UIの更新
+        function updateNotificationUI() {
+            const toggle = document.querySelector('.toggle');
+            const indicator = document.getElementById('notification-indicator');
+            const timesDiv = document.getElementById('notification-times');
+            const statusDiv = document.getElementById('notification-status');
+            
+            if (appState.notifications) {
+                toggle.classList.add('active');
+                indicator.classList.remove('hidden');
+                timesDiv.classList.remove('hidden');
+                statusDiv.classList.remove('hidden');
+                
+                // 時間の更新
+                document.getElementById('evening-time').value = appState.notificationTime.evening;
+                document.getElementById('morning-time').value = appState.notificationTime.morning;
+                
+                // ステータスメッセージの更新
+                statusDiv.innerHTML = `
+                    <p class="text-sm text-green-700">
+                        ✅ 通知が有効です。前日${appState.notificationTime.evening}と当日${appState.notificationTime.morning}に通知されます。
+                    </p>
+                `;
+            } else {
+                toggle.classList.remove('active');
+                indicator.classList.add('hidden');
+                timesDiv.classList.add('hidden');
+                statusDiv.classList.add('hidden');
+            }
+        }
+
+        // 通知時間の更新
+        function updateNotificationTime() {
+            appState.notificationTime.evening = document.getElementById('evening-time').value;
+            appState.notificationTime.morning = document.getElementById('morning-time').value;
+            updateNotificationUI();
+            saveSettings();
+        }
+
+        // 通知のスケジュール
+        function scheduleNotifications() {
+            if (!appState.selectedArea || !areaSchedules[appState.selectedArea]) return;
+            console.log(`通知スケジュール: 前日${appState.notificationTime.evening}, 当日${appState.notificationTime.morning}`);
+        }
+
+        // 検索機能の初期化
+        function initSearchInput() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('input', handleSearch);
+        }
+
+        // 検索処理
+        function handleSearch(event) {
+            appState.searchTerm = event.target.value.toLowerCase();
+            updateSearchResults();
+        }
+
+        // 検索結果の更新
+        function updateSearchResults() {
+            const resultsElement = document.getElementById('search-results');
+            
+            if (!appState.searchTerm) {
+                resultsElement.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">調べたいゴミの名前を入力してください</p>
+                        <p class="text-sm text-gray-400 mt-1">ペットボトル、新聞紙、電池など</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const filteredItems = garbageItems.filter(item =>
+                item.name.toLowerCase().includes(appState.searchTerm)
+            );
+            
+            if (filteredItems.length > 0) {
+                resultsElement.innerHTML = filteredItems.map(item => {
+                    const garbageInfo = garbageTypes[item.type];
+                    return `
+                        <div class="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                            <div class="flex items-center gap-4">
+                                <div class="garbage-badge ${garbageInfo.color}">
+                                    ${garbageInfo.icon}
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="font-semibold text-gray-800">${item.name}</h4>
+                                    <p class="text-blue-600 font-medium">${item.type}</p>
+                                    ${item.note ? `<p class="text-sm text-gray-600 mt-1">${item.note}</p>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                resultsElement.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">「${appState.searchTerm}」の検索結果が見つかりませんでした</p>
+                        <p class="text-sm text-gray-400 mt-1">別のキーワードで検索してみてください</p>
+                    </div>
+                `;
+            }
+        }
+
+        // カレンダーの初期化
+        function initCalendar() {
+            if (!appState.selectedArea) {
+                document.getElementById('calendar-content').innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-gray-500">地域を設定してください</p>
+                        <button onclick="showTab('settings')" class="mt-2 btn btn-primary">地域を設定する</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            updateCalendar();
+        }
+
+        // カレンダーの更新
+        function updateCalendar() {
+            const monthElement = document.getElementById('calendar-month');
+            const contentElement = document.getElementById('calendar-content');
+            
+            const year = appState.calendarDate.getFullYear();
+            const month = appState.calendarDate.getMonth();
+            
+            const monthNames = [
+                '1月', '2月', '3月', '4月', '5月', '6月',
+                '7月', '8月', '9月', '10月', '11月', '12月'
+            ];
+            
+            monthElement.textContent = `${year}年${monthNames[month]}`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+            const startingDayOfWeek = firstDay.getDay();
+            
+            const weekDayNames = ['日', '月', '火', '水', '木', '金', '土'];
+            const today = new Date();
+            
+            let calendarHTML = `
+                <div class="grid-cols-7 mb-2">
+                    ${weekDayNames.map(day => `<div class="text-center text-sm font-medium text-gray-600 py-2">${day}</div>`).join('')}
+                </div>
+                <div class="grid-cols-7">
+            `;
+            
+            // 前月の日付を埋める
+            for (let i = startingDayOfWeek - 1; i >= 0; i--) {
+                const prevDate = new Date(year, month, -i);
+                calendarHTML += createCalendarDay(prevDate, false, today);
+            }
+            
+            // 当月の日付
+            for (let day = 1; day <= daysInMonth; day++) {
+                const currentDate = new Date(year, month, day);
+                calendarHTML += createCalendarDay(currentDate, true, today);
+            }
+            
+            // 次月の日付を埋める（42セルまで）
+            const totalCells = startingDayOfWeek + daysInMonth;
+            const remainingCells = 42 - totalCells;
+            for (let day = 1; day <= remainingCells; day++) {
+                const nextDate = new Date(year, month + 1, day);
+                calendarHTML += createCalendarDay(nextDate, false, today);
+            }
+            
+            calendarHTML += '</div>';
+            
+            // 凡例を追加
+            calendarHTML += `
+                <div class="mt-4 grid-cols-2">
+                    ${Object.entries(garbageTypes).map(([type, info]) => `
+                        <div class="flex items-center gap-2 text-xs">
+                            <div class="garbage-badge-sm ${info.color}">${info.icon}</div>
+                            <span class="text-gray-600">${type}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            
+            contentElement.innerHTML = calendarHTML;
+        }
+
+        // カレンダーの日付セルを作成
+        function createCalendarDay(date, isCurrentMonth, today) {
+            const isToday = date.toDateString() === today.toDateString();
+            const garbageType = getGarbageForDate(date);
+            
+            let dayClass = 'calendar-day';
+            if (!isCurrentMonth) dayClass += ' other-month';
+            if (isToday) dayClass += ' today';
+            
+            let dayContent = `
+                <div class="text-sm ${isCurrentMonth ? 'text-gray-900' : 'text-gray-400'} ${isToday ? 'font-bold' : ''}">
+                    ${date.getDate()}
+                </div>
+            `;
+            
+            if (garbageType && isCurrentMonth) {
+                const garbageInfo = garbageTypes[garbageType];
+                dayContent += `
+                    <div class="mt-1 p-1 ${garbageInfo.color} rounded text-white text-xs text-center">
+                        ${garbageInfo.icon}
+                    </div>
+                `;
+            }
+            
+            return `<div class="${dayClass}">${dayContent}</div>`;
+        }
+
+        // 指定日のゴミを取得
+        function getGarbageForDate(date) {
+            if (!appState.selectedArea || !areaSchedules[appState.selectedArea]) return null;
+            
+            const dayOfWeek = date.getDay();
+            const schedule = areaSchedules[appState.selectedArea].schedule;
+            
+            for (const [type, days] of Object.entries(schedule)) {
+                if (days.includes(dayOfWeek)) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        // カレンダーの月変更
+        function changeMonth(direction) {
+            appState.calendarDate.setMonth(appState.calendarDate.getMonth() + direction);
+            updateCalendar();
+        }
+
+        // PWA関連の初期化
+        function initPWA() {
+            // PWA install prompt
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                appState.deferredPrompt = e;
+                appState.showInstallButton = true;
+                
+                const banner = document.getElementById('install-banner');
+                banner.classList.remove('hidden');
+            });
+
+            // Install button click handler
+            document.getElementById('install-btn').addEventListener('click', () => {
+                if (appState.deferredPrompt) {
+                    appState.deferredPrompt.prompt();
+                    appState.deferredPrompt.userChoice.then((choiceResult) => {
+                        if (choiceResult.outcome === 'accepted') {
+                            console.log('User accepted the install prompt');
+                            document.getElementById('install-banner').classList.add('hidden');
+                        }
+                        appState.deferredPrompt = null;
+                    });
+                }
+            });
+
+            // Service Worker registration
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then((registration) => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch((registrationError) => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            }
+        }
+
+        // 通知時間入力のイベントリスナー
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            
+            // 通知時間の変更イベント
+            document.getElementById('evening-time').addEventListener('change', updateNotificationTime);
+            document.getElementById('morning-time').addEventListener('change', updateNotificationTime);
+            
+            // ドロップダウンの外側クリックで閉じる
+            document.addEventListener('click', (e) => {
+                const dropdown = document.getElementById('area-select-dropdown');
+                const button = document.getElementById('area-select-btn');
+                
+                if (!dropdown.contains(e.target) && !button.contains(e.target)) {
+                    dropdown.classList.add('hidden');
+                }
+            });
+        });
     </script>
 </body>
 </html>
