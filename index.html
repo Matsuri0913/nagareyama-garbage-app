@@ -4,12 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>流山市ゴミ分別アプリ</title>
-    <link rel="manifest" href="manifest.json">
+    <!-- GitHubのアイコンを使用 -->
     <meta name="theme-color" content="#2563eb">
-    <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="流山ゴミ">
+    <!-- GitHubのicon.svgを使用 -->
+    <link rel="icon" href="https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg">
+    <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg">
     <style>
         /* Tailwind-like CSS */
         * {
@@ -1124,7 +1126,7 @@
                     // テスト通知を送信
                     new Notification('流山市ゴミ分別アプリ', {
                         body: '通知が有効になりました！ゴミ出し日にお知らせします。',
-                        icon: '/icon-192.png'
+                        icon: "https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg"
                     });
                 } else if (permission === 'denied') {
                     alert('通知が拒否されました。\n\nブラウザの設定から通知を許可してください：\n\n【設定方法】\n1. ブラウザの設定を開く\n2. サイトの設定 → 通知\n3. このサイトを許可に変更');
@@ -1398,6 +1400,48 @@
 
         // PWA関連の初期化
         function initPWA() {
+            // GitHubのアイコンURL
+            const iconUrl = "https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg";
+            
+            // PWAマニフェストを動的に作成
+            const manifest = {
+                name: "流山市ゴミ分別アプリ",
+                short_name: "流山ゴミ",
+                description: "流山市のゴミ分別と収集日を確認できるアプリ",
+                start_url: "./",
+                display: "standalone",
+                background_color: "#f9fafb",
+                theme_color: "#2563eb",
+                icons: [
+                    {
+                        src: iconUrl,
+                        sizes: "192x192",
+                        type: "image/svg+xml"
+                    },
+                    {
+                        src: iconUrl,
+                        sizes: "512x512",
+                        type: "image/svg+xml"
+                    },
+                    {
+                        src: iconUrl,
+                        sizes: "any",
+                        type: "image/svg+xml",
+                        purpose: "any maskable"
+                    }
+                ]
+            };
+
+            // マニフェストをBlobとして作成してURLを生成
+            const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+            const manifestURL = URL.createObjectURL(manifestBlob);
+            
+            // 動的にmanifestリンクを追加
+            const link = document.createElement('link');
+            link.rel = 'manifest';
+            link.href = manifestURL;
+            document.head.appendChild(link);
+
             // PWA install prompt
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
@@ -1430,10 +1474,39 @@
                 });
             }
 
-            // Service Worker registration (コメントアウト - 404エラーを避けるため)
-            /*
+            // Service Workerを動的に作成（シンプルなキャッシュ機能付き）
             if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.register('/service-worker.js')
+                const swCode = `
+                    const CACHE_NAME = 'nagareyama-garbage-v1';
+                    const urlsToCache = [
+                        './',
+                        './?utm_source=pwa'
+                    ];
+
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then((cache) => cache.addAll(urlsToCache))
+                        );
+                    });
+
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then((response) => {
+                                    if (response) {
+                                        return response;
+                                    }
+                                    return fetch(event.request);
+                                })
+                        );
+                    });
+                `;
+
+                const swBlob = new Blob([swCode], { type: 'application/javascript' });
+                const swURL = URL.createObjectURL(swBlob);
+
+                navigator.serviceWorker.register(swURL)
                     .then((registration) => {
                         console.log('SW registered: ', registration);
                     })
@@ -1441,7 +1514,6 @@
                         console.log('SW registration failed: ', registrationError);
                     });
             }
-            */
         }
 
         // 通知時間入力のイベントリスナー
