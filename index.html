@@ -1067,13 +1067,20 @@
 
         // 通知設定の切り替え
         async function toggleNotifications() {
-            console.log('toggleNotifications called, current state:', appState.notifications);
+            console.log('=== toggleNotifications START ===');
+            console.log('Current notifications state:', appState.notifications);
+            console.log('User agent:', navigator.userAgent);
+            console.log('Is PWA:', window.matchMedia('(display-mode: standalone)').matches);
             
             const toggle = document.getElementById('notification-toggle');
+            console.log('Toggle element found:', !!toggle);
             
             if (!appState.notifications) {
+                console.log('Attempting to enable notifications...');
+                
                 // 通知機能の対応チェック
                 if (!('Notification' in window)) {
+                    console.log('Notification API not available');
                     // デバイス・ブラウザ情報を取得
                     const userAgent = navigator.userAgent;
                     const isIOS = /iPad|iPhone|iPod/.test(userAgent);
@@ -1112,44 +1119,67 @@
                     }
                     
                     alert(message);
+                    console.log('=== toggleNotifications END (no support) ===');
                     return;
                 }
                 
+                console.log('Current notification permission:', Notification.permission);
                 const permission = await Notification.requestPermission();
-                console.log('Notification permission:', permission);
+                console.log('New notification permission:', permission);
                 
                 if (permission === 'granted') {
+                    console.log('Permission granted, enabling notifications...');
                     appState.notifications = true;
-                    console.log('Notifications enabled');
                     scheduleNotifications();
                     
                     // テスト通知を送信
-                    new Notification('流山市ゴミ分別アプリ', {
-                        body: '通知が有効になりました！ゴミ出し日にお知らせします。',
-                        icon: "https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg"
-                    });
+                    try {
+                        new Notification('流山市ゴミ分別アプリ', {
+                            body: '通知が有効になりました！ゴミ出し日にお知らせします。',
+                            icon: "https://raw.githubusercontent.com/Matsuri0913/nagareyama-garbage-app/main/icon.svg"
+                        });
+                        console.log('Test notification sent');
+                    } catch (e) {
+                        console.error('Failed to send test notification:', e);
+                    }
                 } else if (permission === 'denied') {
+                    console.log('Permission denied');
                     alert('通知が拒否されました。\n\nブラウザの設定から通知を許可してください：\n\n【設定方法】\n1. ブラウザの設定を開く\n2. サイトの設定 → 通知\n3. このサイトを許可に変更');
+                    console.log('=== toggleNotifications END (denied) ===');
                     return;
                 } else {
+                    console.log('Permission not granted');
                     alert('通知の許可が得られませんでした。');
+                    console.log('=== toggleNotifications END (not granted) ===');
                     return;
                 }
             } else {
+                console.log('Disabling notifications...');
                 appState.notifications = false;
-                console.log('Notifications disabled');
             }
             
+            console.log('Updating UI and saving settings...');
             updateNotificationUI();
             saveSettings();
+            console.log('=== toggleNotifications END (success) ===');
         }
 
         // 通知UIの更新
         function updateNotificationUI() {
+            console.log('=== updateNotificationUI START ===');
+            console.log('Current notifications state:', appState.notifications);
+            
             const toggle = document.getElementById('notification-toggle');
             const indicator = document.getElementById('notification-indicator');
             const timesDiv = document.getElementById('notification-times');
             const statusDiv = document.getElementById('notification-status');
+            
+            console.log('Elements found:', {
+                toggle: !!toggle,
+                indicator: !!indicator,
+                timesDiv: !!timesDiv,
+                statusDiv: !!statusDiv
+            });
             
             // エラーハンドリング
             if (!toggle) {
@@ -1170,6 +1200,7 @@
             }
             
             if (appState.notifications) {
+                console.log('Setting UI for enabled notifications');
                 toggle.classList.add('active');
                 indicator.classList.remove('hidden');
                 timesDiv.classList.remove('hidden');
@@ -1179,8 +1210,19 @@
                 const eveningTime = document.getElementById('evening-time');
                 const morningTime = document.getElementById('morning-time');
                 
-                if (eveningTime) eveningTime.value = appState.notificationTime.evening;
-                if (morningTime) morningTime.value = appState.notificationTime.morning;
+                console.log('Time inputs found:', {
+                    eveningTime: !!eveningTime,
+                    morningTime: !!morningTime
+                });
+                
+                if (eveningTime) {
+                    eveningTime.value = appState.notificationTime.evening;
+                    console.log('Set evening time to:', appState.notificationTime.evening);
+                }
+                if (morningTime) {
+                    morningTime.value = appState.notificationTime.morning;
+                    console.log('Set morning time to:', appState.notificationTime.morning);
+                }
                 
                 // ステータスメッセージの更新
                 statusDiv.innerHTML = `
@@ -1188,12 +1230,17 @@
                         ✅ 通知が有効です。前日${appState.notificationTime.evening}と当日${appState.notificationTime.morning}に通知されます。
                     </p>
                 `;
+                console.log('Updated status message');
             } else {
+                console.log('Setting UI for disabled notifications');
                 toggle.classList.remove('active');
                 indicator.classList.add('hidden');
                 timesDiv.classList.add('hidden');
                 statusDiv.classList.add('hidden');
             }
+            
+            console.log('Final toggle classes:', toggle.className);
+            console.log('=== updateNotificationUI END ===');
         }
 
         // 通知時間の更新
