@@ -1070,19 +1070,67 @@
             const toggle = document.getElementById('notification-toggle');
             
             if (!appState.notifications) {
-                if ('Notification' in window) {
-                    const permission = await Notification.requestPermission();
-                    console.log('Notification permission:', permission);
-                    if (permission === 'granted') {
-                        appState.notifications = true;
-                        console.log('Notifications enabled');
-                        scheduleNotifications();
+                // 通知機能の対応チェック
+                if (!('Notification' in window)) {
+                    // デバイス・ブラウザ情報を取得
+                    const userAgent = navigator.userAgent;
+                    const isIOS = /iPad|iPhone|iPod/.test(userAgent);
+                    const isAndroid = /Android/.test(userAgent);
+                    const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
+                    const isChrome = /Chrome/.test(userAgent);
+                    const isFirefox = /Firefox/.test(userAgent);
+                    
+                    let message = 'このブラウザは通知機能に対応していません。\n\n';
+                    
+                    if (isIOS) {
+                        if (isSafari) {
+                            message += '【iPhoneユーザーへ】\n';
+                            message += 'iOS版Safariでは通知機能に制限があります。\n';
+                            message += '• iOS 16.4以降が必要です\n';
+                            message += '• ホーム画面に追加（PWA）することで通知が改善される場合があります\n\n';
+                            message += '手順：\n';
+                            message += '1. Safari下部の共有ボタンをタップ\n';
+                            message += '2. 「ホーム画面に追加」を選択';
+                        } else {
+                            message += '【iPhoneユーザーへ】\n';
+                            message += 'iPhone/iPadでは、Chrome・Firefoxなどは通知機能が制限されています。\n';
+                            message += 'Safariブラウザをお試しください。';
+                        }
+                    } else if (isAndroid) {
+                        message += '【Androidユーザーへ】\n';
+                        message += '以下のブラウザで通知機能が利用できます：\n';
+                        message += '• Chrome（推奨）\n';
+                        message += '• Firefox\n';
+                        message += '• Samsung Internet\n';
+                        message += '• Microsoft Edge\n\n';
+                        message += '現在のブラウザを最新版に更新してみてください。';
                     } else {
-                        alert('通知の許可が必要です。ブラウザの設定で通知を許可してください。');
-                        return;
+                        message += 'デスクトップブラウザの場合：\n';
+                        message += '• Chrome、Firefox、Edge、Safariの最新版をお試しください。';
                     }
+                    
+                    alert(message);
+                    return;
+                }
+                
+                const permission = await Notification.requestPermission();
+                console.log('Notification permission:', permission);
+                
+                if (permission === 'granted') {
+                    appState.notifications = true;
+                    console.log('Notifications enabled');
+                    scheduleNotifications();
+                    
+                    // テスト通知を送信
+                    new Notification('流山市ゴミ分別アプリ', {
+                        body: '通知が有効になりました！ゴミ出し日にお知らせします。',
+                        icon: '/icon-192.png'
+                    });
+                } else if (permission === 'denied') {
+                    alert('通知が拒否されました。\n\nブラウザの設定から通知を許可してください：\n\n【設定方法】\n1. ブラウザの設定を開く\n2. サイトの設定 → 通知\n3. このサイトを許可に変更');
+                    return;
                 } else {
-                    alert('このブラウザは通知機能に対応していません。');
+                    alert('通知の許可が得られませんでした。');
                     return;
                 }
             } else {
