@@ -410,10 +410,16 @@
             transition: background-color 0.2s;
             background-color: #d1d5db;
             cursor: pointer;
+            border: none;
+            outline: none;
         }
         
         .toggle.active {
             background-color: #2563eb;
+        }
+        
+        .toggle:hover {
+            opacity: 0.8;
         }
         
         .toggle-switch {
@@ -424,6 +430,7 @@
             border-radius: 50%;
             background-color: white;
             transition: transform 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
         
         .toggle.active .toggle-switch {
@@ -839,7 +846,8 @@
             appState.notifications = savedNotifications;
             appState.notificationTime = savedNotificationTime;
             
-            updateNotificationUI();
+            // 通知UIの更新は設定タブが表示されている時のみ実行
+            // updateNotificationUI(); // この行をコメントアウト
             
             if (savedNotifications && 'Notification' in window && Notification.permission === 'default') {
                 Notification.requestPermission();
@@ -874,6 +882,8 @@
 
         // タブの切り替え
         function showTab(tabName) {
+            console.log(`Switching to tab: ${tabName}`);
+            
             // すべてのタブを非表示
             const tabs = document.querySelectorAll('.tab-content');
             tabs.forEach(tab => tab.classList.add('hidden'));
@@ -882,6 +892,9 @@
             const targetTab = document.getElementById(tabName + '-tab');
             if (targetTab) {
                 targetTab.classList.remove('hidden');
+                console.log(`${tabName} tab is now visible`);
+            } else {
+                console.error(`Tab ${tabName}-tab not found`);
             }
             
             // ナビゲーションの状態を更新
@@ -896,6 +909,23 @@
             // タブごとの初期化処理
             if (tabName === 'calendar') {
                 initCalendar();
+            } else if (tabName === 'settings') {
+                // 少し遅延させて要素が確実に存在するようにする
+                setTimeout(() => {
+                    console.log('Initializing settings tab...');
+                    
+                    // デバッグ: 要素の存在確認
+                    const toggle = document.getElementById('notification-toggle');
+                    console.log('notification-toggle element:', toggle);
+                    
+                    if (toggle) {
+                        updateNotificationUI();
+                    } else {
+                        console.error('notification-toggle still not found after timeout');
+                        // HTMLを再確認
+                        console.log('Settings tab HTML:', document.getElementById('settings-tab').innerHTML);
+                    }
+                }, 100);
             }
         }
 
@@ -922,6 +952,11 @@
         // 今日のゴミ表示の更新
         function updateTodayGarbage() {
             const contentElement = document.getElementById('today-garbage-content');
+            if (!contentElement) {
+                console.error('today-garbage-content element not found');
+                return;
+            }
+            
             const todayGarbage = getTodayGarbage();
             
             if (todayGarbage && appState.selectedArea) {
@@ -957,6 +992,11 @@
         // 地域警告の表示/非表示
         function updateAreaWarning() {
             const warningElement = document.getElementById('area-warning');
+            if (!warningElement) {
+                console.error('area-warning element not found');
+                return;
+            }
+            
             if (appState.selectedArea) {
                 warningElement.classList.add('hidden');
             } else {
@@ -967,6 +1007,11 @@
         // 選択された地域名の表示
         function updateSelectedAreaName() {
             const nameElement = document.getElementById('selected-area-name');
+            if (!nameElement) {
+                console.error('selected-area-name element not found');
+                return;
+            }
+            
             if (appState.selectedArea && areaSchedules[appState.selectedArea]) {
                 nameElement.textContent = areaSchedules[appState.selectedArea].name;
                 nameElement.classList.remove('hidden');
@@ -1020,23 +1065,29 @@
 
         // 通知設定の切り替え
         async function toggleNotifications() {
-            const toggle = document.querySelector('.toggle');
+            console.log('toggleNotifications called, current state:', appState.notifications);
+            
+            const toggle = document.getElementById('notification-toggle');
             
             if (!appState.notifications) {
                 if ('Notification' in window) {
                     const permission = await Notification.requestPermission();
+                    console.log('Notification permission:', permission);
                     if (permission === 'granted') {
                         appState.notifications = true;
-                        toggle.classList.add('active');
+                        console.log('Notifications enabled');
                         scheduleNotifications();
                     } else {
                         alert('通知の許可が必要です。ブラウザの設定で通知を許可してください。');
                         return;
                     }
+                } else {
+                    alert('このブラウザは通知機能に対応していません。');
+                    return;
                 }
             } else {
                 appState.notifications = false;
-                toggle.classList.remove('active');
+                console.log('Notifications disabled');
             }
             
             updateNotificationUI();
@@ -1045,10 +1096,28 @@
 
         // 通知UIの更新
         function updateNotificationUI() {
-            const toggle = document.querySelector('.toggle');
+            const toggle = document.getElementById('notification-toggle');
             const indicator = document.getElementById('notification-indicator');
             const timesDiv = document.getElementById('notification-times');
             const statusDiv = document.getElementById('notification-status');
+            
+            // エラーハンドリング
+            if (!toggle) {
+                console.error('notification-toggle element not found');
+                return;
+            }
+            if (!indicator) {
+                console.error('notification-indicator element not found');
+                return;
+            }
+            if (!timesDiv) {
+                console.error('notification-times element not found');
+                return;
+            }
+            if (!statusDiv) {
+                console.error('notification-status element not found');
+                return;
+            }
             
             if (appState.notifications) {
                 toggle.classList.add('active');
@@ -1057,8 +1126,11 @@
                 statusDiv.classList.remove('hidden');
                 
                 // 時間の更新
-                document.getElementById('evening-time').value = appState.notificationTime.evening;
-                document.getElementById('morning-time').value = appState.notificationTime.morning;
+                const eveningTime = document.getElementById('evening-time');
+                const morningTime = document.getElementById('morning-time');
+                
+                if (eveningTime) eveningTime.value = appState.notificationTime.evening;
+                if (morningTime) morningTime.value = appState.notificationTime.morning;
                 
                 // ステータスメッセージの更新
                 statusDiv.innerHTML = `
@@ -1285,24 +1357,33 @@
                 appState.showInstallButton = true;
                 
                 const banner = document.getElementById('install-banner');
-                banner.classList.remove('hidden');
-            });
-
-            // Install button click handler
-            document.getElementById('install-btn').addEventListener('click', () => {
-                if (appState.deferredPrompt) {
-                    appState.deferredPrompt.prompt();
-                    appState.deferredPrompt.userChoice.then((choiceResult) => {
-                        if (choiceResult.outcome === 'accepted') {
-                            console.log('User accepted the install prompt');
-                            document.getElementById('install-banner').classList.add('hidden');
-                        }
-                        appState.deferredPrompt = null;
-                    });
+                if (banner) {
+                    banner.classList.remove('hidden');
                 }
             });
 
-            // Service Worker registration
+            // Install button click handler
+            const installBtn = document.getElementById('install-btn');
+            if (installBtn) {
+                installBtn.addEventListener('click', () => {
+                    if (appState.deferredPrompt) {
+                        appState.deferredPrompt.prompt();
+                        appState.deferredPrompt.userChoice.then((choiceResult) => {
+                            if (choiceResult.outcome === 'accepted') {
+                                console.log('User accepted the install prompt');
+                                const banner = document.getElementById('install-banner');
+                                if (banner) {
+                                    banner.classList.add('hidden');
+                                }
+                            }
+                            appState.deferredPrompt = null;
+                        });
+                    }
+                });
+            }
+
+            // Service Worker registration (コメントアウト - 404エラーを避けるため)
+            /*
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('/service-worker.js')
                     .then((registration) => {
@@ -1312,6 +1393,7 @@
                         console.log('SW registration failed: ', registrationError);
                     });
             }
+            */
         }
 
         // 通知時間入力のイベントリスナー
